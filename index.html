@@ -91,7 +91,6 @@
   .h4 .qblank{display:inline-block; width:24px; height:30px; line-height:26px; border:3px dashed var(--orange); border-radius:8px; color:#c98a3a; background:#fff7e6;}
   .h4 .qblank.active{background:var(--yellow); animation:blink 1s infinite;}
   .h4 .barline{border-top:3px solid var(--ink);}
-  .h4 .dim{opacity:.28;}
   .step4btns{display:flex; justify-content:center; gap:6px; flex-wrap:wrap; margin:8px 0;}
   .step4btns button{border:3px solid var(--ink); border-radius:12px; padding:8px 12px; font-family:inherit; font-weight:800; font-size:14px; background:#fff; color:var(--ink); box-shadow:0 4px 0 var(--ink); cursor:pointer;}
   .step4btns button.on{background:var(--cyan); animation:blink 1s infinite;}
@@ -851,7 +850,7 @@
   $('checkBeaker').onclick=checkBeaker; $('nextBtn').onclick=nextQuestion;
   $('hintbtn').onclick=function(){ $('hintbox').classList.toggle('hidden'); };
   $('retry').onclick=function(){ startGame(mode, variant, timed); };
-  $('tohome').onclick=function(){ clearInterval(qTimer); show('home'); };
+  $('tohome').onclick=function(){ clearInterval(qTimer); $('intMenu').classList.add('hidden'); show('home'); };
 
   function runSelfTests(){
     var fails=0;
