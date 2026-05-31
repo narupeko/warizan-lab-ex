@@ -52,6 +52,13 @@
   .setting-val{font-family:'Mochiy Pop One',sans-serif; font-size:26px; color:var(--cyan); margin-top:8px;}
   .credit{margin-top:16px; font-size:11px; line-height:1.6; color:#8a7bb0; text-align:center; font-weight:700;}
   .credit a{color:#6a5b95;}
+  .mistake-list{text-align:left; max-height:220px; overflow-y:auto; margin:4px 0;}
+  .mistake-row{display:flex; justify-content:space-between; align-items:center; gap:8px; background:#fff; border:2px solid #e0d6f5; border-radius:10px; padding:7px 10px; margin-bottom:6px; font-weight:800; font-size:14px;}
+  .mistake-row .mq{color:var(--ink);}
+  .mistake-row .mmeta{font-size:11px; color:#8a7bb0; white-space:nowrap;}
+  .mistake-empty{color:#8a7bb0; font-weight:700; font-size:13px; padding:10px; text-align:center;}
+  .clearbtn{display:block; margin:8px auto 0; background:#fff; border:3px solid #c23b3b; color:#c23b3b; border-radius:12px; padding:6px 16px; font-family:inherit; font-weight:800; font-size:13px; cursor:pointer; box-shadow:0 3px 0 #c23b3b;}
+  .clearbtn:active{transform:translateY(2px); box-shadow:0 1px 0 #c23b3b;}
   .hud{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:6px;}
   .pill{background:var(--ink); color:#fff; border-radius:30px; padding:6px 12px; font-weight:800; font-size:14px; white-space:nowrap;}
   .pill.danger{background:#c23b3b; animation:pulse .5s infinite;}
@@ -226,9 +233,11 @@
       <div class="setting-val"><span id="qCountVal">10</span> 問</div>
       <div style="font-size:11px; color:#8a7bb0; font-weight:700; margin-top:4px;">3〜20問・ぜんぶの ラボ 共通</div>
     </div>
-    <div class="setting-card soon">
+    <div class="setting-card">
       <div class="setting-title">📒 まちがいノート</div>
-      <div style="font-size:12px; color:#999; font-weight:700;">まちがえた もんだいを きろく<br>（つぎの アップデートで！）</div>
+      <div style="font-size:11px; color:#8a7bb0; font-weight:700; margin-bottom:6px;">まちがえた・時間切れの もんだい（新しい順）</div>
+      <div id="mistakeList" class="mistake-list"></div>
+      <button class="clearbtn hidden" id="clearMistakes">🗑️ ぜんぶ けす</button>
     </div>
     <button class="bigbtn" id="parentBack">もどる ▶</button>
   </section>
@@ -253,6 +262,30 @@
   function setBest(m,v){try{localStorage.setItem('warizanlab2_'+m,v);}catch(e){}}
   function getQCount(){try{var v=parseInt(localStorage.getItem('warizan_qcount'));return (v>=3&&v<=20)?v:10;}catch(e){return 10;}}
   function setQCount(v){try{localStorage.setItem('warizan_qcount',v);}catch(e){}}
+  // ===== まちがいノート（誤答・時間切れの記録） =====
+  function getMistakes(){try{var a=JSON.parse(localStorage.getItem('warizan_mistakes')||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}}
+  function setMistakes(list){try{localStorage.setItem('warizan_mistakes',JSON.stringify(list));}catch(e){}}
+  function recordMistake(){
+    if(!current) return;
+    var list=getMistakes(), key=current.mode+'|'+current.prob, found=null, now=Date.now();
+    for(var i=0;i<list.length;i++){ if(list[i].mode+'|'+list[i].prob===key){ found=list[i]; break; } }
+    if(found){ found.count=(found.count||1)+1; found.ts=now; }
+    else { list.push({mode:current.mode, prob:current.prob, ans:current.ans, rem:current.rem||0, hasRem:!!current.hasRem, count:1, ts:now}); }
+    list.sort(function(a,b){return b.ts-a.ts;});
+    if(list.length>60) list=list.slice(0,60);
+    setMistakes(list);
+  }
+  function renderMistakes(){
+    var list=getMistakes(), host=$('mistakeList'), clr=$('clearMistakes');
+    if(!list.length){ host.innerHTML='<div class="mistake-empty">まだ ありません 🌱 がんばろう！</div>'; clr.classList.add('hidden'); return; }
+    var emo=['🧪','📏','🥤','➗'];
+    host.innerHTML=list.map(function(r){
+      var ansTxt=r.prob+' = '+r.ans+(r.hasRem? ' あまり '+r.rem : '');
+      var d=new Date(r.ts), dateTxt=(d.getMonth()+1)+'/'+d.getDate();
+      return '<div class="mistake-row"><span class="mq">'+(emo[r.mode]||'')+' '+ansTxt+'</span><span class="mmeta">'+r.count+'回 ・ '+dateTxt+'</span></div>';
+    }).join('');
+    clr.classList.remove('hidden');
+  }
 
   function longDivision(a10,b){
     var digits=String(a10).split('').map(Number); var steps=[], carry=0, qd=[];
@@ -613,7 +646,7 @@
     if(dead)return; clearInterval(qTimer);
     var ok=fullyOk && !missedThisQ;
     if(ok){ combo++; if(combo>maxCombo)maxCombo=combo; rightCount++; $('fb').innerHTML=msg+(combo>1?'<span class="combo">🔥'+combo+'</span>':''); $('fb').style.color='#149a52'; }
-    else { combo=0; $('fb').innerHTML=msg; $('fb').style.color='#c23b3b'; }
+    else { combo=0; recordMistake(); $('fb').innerHTML=msg; $('fb').style.color='#c23b3b'; }
     $('comboN').textContent=combo; $('checkChoices').innerHTML=''; $('choices').innerHTML='';
     $('nextBtn').classList.remove('hidden');
   }
@@ -645,7 +678,7 @@
   }
 
   function explode(){
-    if(dead)return; dead=true; clearInterval(qTimer); playBoom();
+    if(dead)return; dead=true; clearInterval(qTimer); recordMistake(); playBoom();
     var boom=document.createElement('div'); boom.id='boom'; boom.innerHTML='<div class="core">💥</div>'; document.body.appendChild(boom);
     var frags=['🧨','💥','🔥','⭐','🍊','💦'];
     for(var i=0;i<16;i++){ (function(){ var f=document.createElement('div'); f.className='frag'; f.textContent=pick(frags); f.style.left='50%'; f.style.top='50%'; document.body.appendChild(f);
@@ -755,9 +788,10 @@
   function goHome(){ clearInterval(qTimer); dead=false; $('intMenu').classList.add('hidden'); show('home'); }
   $('tohome').onclick=goHome;
   $('gameHome').onclick=goHome;
-  $('parentBtn').onclick=function(){ $('qCountSlider').value=TOTAL_Q; $('qCountVal').textContent=TOTAL_Q; show('parent'); };
+  $('parentBtn').onclick=function(){ $('qCountSlider').value=TOTAL_Q; $('qCountVal').textContent=TOTAL_Q; renderMistakes(); show('parent'); };
   $('parentBack').onclick=function(){ show('home'); };
   $('qCountSlider').oninput=function(){ TOTAL_Q=parseInt(this.value); $('qCountVal').textContent=TOTAL_Q; setQCount(TOTAL_Q); };
+  $('clearMistakes').onclick=function(){ setMistakes([]); renderMistakes(); };
 
   function runSelfTests(){
     var fails=0;
