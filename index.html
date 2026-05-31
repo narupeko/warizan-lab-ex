@@ -501,6 +501,7 @@
   // ===== 筆算 =====
   function goCalc(){
     phase='calc';
+    if(current.mode===3 && current.variant==='A') step4=null;
     $('beakerPhase').classList.add('hidden'); $('calcPhase').classList.remove('hidden'); $('checkPhase').classList.add('hidden');
     $('phaseTag').textContent='② ひっ算'; $('phaseTag').className='phase-tag tag-calc';
     $('fb').innerHTML=''; $('hintbox').classList.add('hidden');
@@ -764,21 +765,24 @@
   // 同じ問題を最初（ビーカー）からやり直し
   function reloadSameQuestion(){
     phase='beaker'; missedThisQ=false;
+    step4=null; bundleStage='tens'; tensPer=0; onesPer=0;
     $('phaseTag').textContent='① ビーカーで分ける'; $('phaseTag').className='phase-tag tag-beaker';
     $('remBadge').classList.toggle('hidden', !current.hasRem);
     $('story').textContent=current.story; $('problem').textContent=current.prob+' = ?';
     $('instr').textContent=current.beakerInstr;
     $('beakerPhase').classList.remove('hidden'); $('calcPhase').classList.add('hidden'); $('checkPhase').classList.add('hidden');
-    $('checkBeaker').disabled=false; $('nextBtn').classList.add('hidden');
+    $('checkBeaker').disabled=false; $('checkBeaker').textContent='これで分けた！'; $('nextBtn').classList.add('hidden');
     $('fb').innerHTML='やりなおし！ もういちど 分けてみよう'; $('fb').style.color='#c23b3b';
     $('hintbox').classList.add('hidden'); $('hintbox').innerHTML=current.hint;
     buildBeakers(); startQTimer(TIME_LIMIT);
   }
 
   function loadQuestion(){
-    var plan = (mode===0 && qPlan[qIndex]) ? qPlan[qIndex] : {b:null, rem:false};
-    current=gen(mode, mode===0 ? plan.rem : false, mode===0 ? plan.b : null);
+    var usePlan = (mode===0 || mode===3);
+    var plan = (usePlan && qPlan[qIndex]) ? qPlan[qIndex] : {b:null, rem:false};
+    current=gen(mode, usePlan ? plan.rem : false, usePlan ? plan.b : null);
     phase='beaker'; missedThisQ=false;
+    step4=null; bundleStage='tens'; tensPer=0; onesPer=0;
     $('qN').textContent=qIndex+1; $('stageName').textContent=STAGE_NAMES[mode];
     $('phaseTag').textContent='① ビーカーで分ける'; $('phaseTag').className='phase-tag tag-beaker';
     $('remBadge').classList.toggle('hidden', !current.hasRem);
@@ -786,7 +790,7 @@
     $('problem').classList.remove('pop'); void $('problem').offsetWidth; $('problem').classList.add('pop');
     $('instr').textContent=current.beakerInstr;
     $('beakerPhase').classList.remove('hidden'); $('calcPhase').classList.add('hidden'); $('checkPhase').classList.add('hidden');
-    $('checkBeaker').disabled=false; $('nextBtn').classList.add('hidden');
+    $('checkBeaker').disabled=false; $('checkBeaker').textContent='これで分けた！'; $('nextBtn').classList.add('hidden');
     $('fb').innerHTML=''; $('hintbox').classList.add('hidden'); $('hintbox').innerHTML=current.hint;
     buildBeakers(); startQTimer(TIME_LIMIT);
   }
@@ -794,6 +798,15 @@
   // 難易度プランを作る：やさしい→難しいの流れ＋少しランダムに揺らす
   function buildPlan(){
     qPlan=[];
+    if(mode===3){
+      var bases=[2,3,2,4,3,5,6,4,7,8];
+      for(var k=0;k<bases.length-1;k++){ if(Math.random()<0.3){ var t=bases[k]; bases[k]=bases[k+1]; bases[k+1]=t; } }
+      var rpool=[]; for(var j=4;j<TOTAL_Q;j++) rpool.push(j);
+      rpool.sort(function(){return Math.random()-0.5;});
+      var rset={}; rpool.slice(0,REM_COUNT).forEach(function(idx){ rset[idx]=true; });
+      for(var q=0;q<TOTAL_Q;q++) qPlan.push({b:bases[q], rem:!!rset[q]});
+      return;
+    }
     if(mode!==0){ for(var i=0;i<TOTAL_Q;i++) qPlan.push({b:null,rem:false}); return; }
     // 割る数の難易度: 序盤は2,3中心 → 後半は4,5中心。各問に割る数を割り当て
     // ベースの並び（やさしい順）
@@ -837,7 +850,7 @@
   });
   $('checkBeaker').onclick=checkBeaker; $('nextBtn').onclick=nextQuestion;
   $('hintbtn').onclick=function(){ $('hintbox').classList.toggle('hidden'); };
-  $('retry').onclick=function(){ startGame(mode); };
+  $('retry').onclick=function(){ startGame(mode, variant, timed); };
   $('tohome').onclick=function(){ clearInterval(qTimer); show('home'); };
 
   function runSelfTests(){
