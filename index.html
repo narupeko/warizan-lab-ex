@@ -49,6 +49,15 @@
   .story{text-align:center; font-size:15px; font-weight:700; color:#7a6ba0; min-height:20px; margin-bottom:4px;}
   .problem{font-family:'Mochiy Pop One',sans-serif; text-align:center; font-size:34px; color:var(--ink); margin-bottom:10px;}
   .instr{text-align:center; font-size:13px; font-weight:800; color:var(--orange); margin-bottom:12px; min-height:18px; line-height:1.5;}
+  .bundles{display:flex; flex-direction:column; gap:10px; align-items:center; margin:6px 0;}
+  .brow{display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:center;}
+  .brow .blab{font-size:12px; font-weight:800; color:#077; width:80px; text-align:right;}
+  .tab{display:inline-block; width:10px; height:30px; background:linear-gradient(180deg,#ffd23f,#ff9a1f); border:2px solid var(--ink); border-radius:3px;}
+  .bara{display:inline-block; width:10px; height:10px; background:#00d9c0; border:2px solid var(--ink); border-radius:50%;}
+  .bgroup{display:inline-flex; gap:3px; padding:3px 5px; border:2px dashed #bbb; border-radius:8px; min-height:20px;}
+  .bperson{display:inline-flex; flex-direction:column; align-items:center; gap:2px; font-size:11px; font-weight:800; color:#555;}
+  .intslider-row{display:flex; flex-direction:column; align-items:center; gap:4px; margin-top:8px;}
+  .intslider-row .sval{font-size:14px; font-weight:800; color:var(--juice2);}
   .beaker-area{display:flex; justify-content:center; align-items:flex-end; gap:12px; margin-bottom:8px;}
   .beaker{position:relative; width:54px; height:140px;}
   .glass{position:absolute; inset:0; border:3px solid var(--ink); border-top:none; border-radius:6px 6px 16px 16px; background:rgba(255,255,255,.5); overflow:hidden;}
@@ -309,6 +318,7 @@
   // ===== ビーカー =====
   function buildBeakers(){
     var area=$('beakerArea'), ctrl=$('beakerCtrl'); area.innerHTML=''; ctrl.innerHTML='';
+    if(current.mode===3){ buildBundles(); return; }
     if(current.mode===0){
       beakerVals=[]; for(var i=0;i<current.b;i++)beakerVals.push(0);
       srcRemain=current.a10;
@@ -334,6 +344,47 @@
     bindPour(); refreshBeakers();
   }
 
+  var bundleStage='tens', tensPer=0, onesPer=0;
+  function buildBundles(){
+    bundleStage='tens'; tensPer=0; onesPer=0;
+    renderBundles();
+  }
+  function renderBundles(){
+    var area=$('beakerArea'), ctrl=$('beakerCtrl');
+    var b=current.b, tens=current.tens, ones=current.ones;
+    var tensGiven=tensPer*b, tensLeft=tens-tensGiven;
+    var onesPool=ones + (bundleStage==='ones'? tensLeft*10 : 0);
+    var onesGiven=onesPer*b, onesLeft=onesPool-onesGiven;
+    function tabs(n){ var s=''; for(var i=0;i<n;i++) s+='<span class="tab"></span>'; return s; }
+    function baras(n){ var s=''; for(var i=0;i<n;i++) s+='<span class="bara"></span>'; return s; }
+    var people='';
+    for(var p=0;p<b;p++){
+      people+='<div class="bperson"><div class="bgroup">'+tabs(tensPer)+baras(onesPer)+'</div>'+(p+1)+'人目</div>';
+    }
+    var srcTabs = bundleStage==='tens'? tensLeft : 0;
+    var srcBaras = bundleStage==='tens'? ones : onesLeft;
+    area.innerHTML=
+      '<div class="bundles">'
+      +'<div class="brow"><span class="blab">のこり→</span><div class="bgroup">'+tabs(srcTabs)+baras(srcBaras)+'</div></div>'
+      +'<div class="brow" style="gap:12px">'+people+'</div>'
+      +'</div>';
+    var label = bundleStage==='tens'
+      ? '十の位：たば'+tens+'本を '+b+'人に 同じだけ（1人 何本ずつ？）'
+      : 'あまったたば'+(tens-tensPer*b)+'本→ばら'+((tens-tensPer*b)*10)+'本に！ ばら'+onesPool+'本を '+b+'人に';
+    var maxPer = bundleStage==='tens'? Math.floor(tens/b) : Math.floor(onesPool/b);
+    var cur = bundleStage==='tens'? tensPer : onesPer;
+    ctrl.innerHTML=
+      '<div class="intslider-row" style="width:100%">'
+      +'<div style="font-size:12px;font-weight:800;color:#077;text-align:center">'+label+'</div>'
+      +'<input type="range" class="hslider" id="intSlider" min="0" max="'+Math.max(maxPer,0)+'" step="1" value="'+cur+'">'
+      +'<div class="sval">1人 <span id="intPerVal">'+cur+'</span> 本ずつ</div>'
+      +'</div>';
+    var sl=$('intSlider');
+    sl.oninput=function(){ if(dead)return; var v=parseInt(sl.value);
+      if(bundleStage==='tens') tensPer=v; else onesPer=v;
+      $('intPerVal').textContent=v; renderBundles(); };
+    $('checkBeaker').textContent = bundleStage==='tens'? '十の位を 分けた！' : 'これで 分けた！';
+  }
   function makeBeaker(label, valL, scaleMax, isSrc, idx, isRem){
     var d=document.createElement('div'); d.className='beaker';
     var pct=Math.min(100, valL/scaleMax*100);
@@ -386,8 +437,27 @@
     } else { var cs=$('cupSlider'); if(cs) cs.oninput=function(){ if(dead)return; beakerVals[0]=parseInt(cs.value); refreshBeakers(); }; }
   }
 
+  function checkBundles(){
+    var b=current.b, fb=$('fb');
+    function shake(){ var box=$('wrap'); box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake'); }
+    if(bundleStage==='tens'){
+      var want=Math.floor(current.tens/b);
+      if(tensPer===want){ bundleStage='ones'; onesPer=0; fb.innerHTML='十の位OK！ あまったたばを ばらにくずすよ'; fb.style.color='#149a52'; renderBundles(); }
+      else { fb.innerHTML='たば'+current.tens+'本を '+b+'人に 同じだけ。1人 '+want+'本ずつだよ'; fb.style.color='#c23b3b'; shake(); }
+      return;
+    }
+    var onesTarget=current.ans%10;
+    var leftover=current.rem;
+    if(onesPer===onesTarget){
+      fb.innerHTML='ぴったり！ 1人 '+current.ans+'こ'+(current.hasRem? '、あまり '+leftover+'こ':'')+'！';
+      fb.style.color='#149a52'; $('checkBeaker').disabled=true; setTimeout(goCalc,900);
+    } else {
+      fb.innerHTML='ばらを '+b+'人に 同じだけ。1人 '+onesTarget+'本ずつだよ'+(current.hasRem? '（分けきれない分が あまり）':''); fb.style.color='#c23b3b'; shake();
+    }
+  }
   function checkBeaker(){
     if(dead)return; var ok=false, msg='';
+    if(current.mode===3){ checkBundles(); return; }
     if(current.mode===0){
       var allEqual=beakerVals.every(function(v){return v===beakerVals[0];});
       var used=beakerVals.reduce(function(a,b){return a+b;},0);
