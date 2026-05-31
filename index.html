@@ -84,6 +84,10 @@
   .intslider-row{display:flex; flex-direction:column; align-items:center; gap:4px; margin-top:8px;}
   .intslider-row .sval{font-size:14px; font-weight:800; color:var(--juice2);}
   .intslider-row .bigper{display:inline-block; min-width:30px; font-size:30px; color:var(--juice2); vertical-align:-6px; margin:0 2px;}
+  .stepper{display:flex; align-items:center; justify-content:center; gap:12px; margin-top:4px;}
+  .stepbtn{width:46px; height:46px; border:3px solid var(--ink); border-radius:14px; background:#fff; font-family:'Mochiy Pop One',sans-serif; font-size:26px; color:var(--ink); cursor:pointer; box-shadow:0 4px 0 var(--ink); line-height:1; display:flex; align-items:center; justify-content:center; flex:none;}
+  .stepbtn:active{transform:translateY(2px); box-shadow:0 2px 0 var(--ink);}
+  .stepbtn:disabled{opacity:.35; box-shadow:0 4px 0 #aaa; cursor:not-allowed;}
   .beaker-area{display:flex; justify-content:center; align-items:flex-end; gap:12px; margin-bottom:8px;}
   .beaker{position:relative; width:54px; height:140px;}
   .glass{position:absolute; inset:0; border:3px solid var(--ink); border-top:none; border-radius:6px 6px 16px 16px; background:rgba(255,255,255,.5); overflow:hidden;}
@@ -438,12 +442,16 @@
       '<div class="intslider-row" style="width:100%">'
       +'<div style="font-size:12px;font-weight:800;color:#077;text-align:center">'+label+'</div>'
       +'<input type="range" class="hslider" id="intSlider" min="0" max="'+Math.max(maxPer,0)+'" step="1" value="'+cur+'">'
+      +'<div class="stepper">'
+      +'<button type="button" class="stepbtn" id="minusBtn"'+(cur<=0?' disabled':'')+'>−</button>'
       +'<div class="sval">1人 <span class="bigper" id="intPerVal">'+cur+'</span> 本ずつ</div>'
+      +'<button type="button" class="stepbtn" id="plusBtn"'+(cur>=maxPer?' disabled':'')+'>＋</button>'
+      +'</div>'
       +'</div>';
-    var sl=$('intSlider');
-    sl.oninput=function(){ if(dead)return; var v=parseInt(sl.value);
-      if(bundleStage==='tens') tensPer=v; else onesPer=v;
-      $('intPerVal').textContent=v; renderBundles(); };
+    function setPer(v){ if(dead)return; v=Math.max(0,Math.min(maxPer,v)); if(bundleStage==='tens') tensPer=v; else onesPer=v; renderBundles(); }
+    $('intSlider').oninput=function(){ setPer(parseInt(this.value)); };
+    $('minusBtn').onclick=function(){ setPer(cur-1); };
+    $('plusBtn').onclick=function(){ setPer(cur+1); };
     $('checkBeaker').textContent = bundleStage==='tens'? '十の位を 分けた！' : 'これで 分けた！';
   }
   function makeBeaker(label, valL, scaleMax, isSrc, idx, isRem){
