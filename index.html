@@ -115,7 +115,7 @@
   .ld .lead2{display:inline-block; width:42px; text-align:right; white-space:nowrap; flex:none;}
   .ld .lead2 .divisor{margin-right:2px;} .ld .lead2 .bracket{margin-right:0;}
   .cellnum.roof{border-top:3px solid var(--ink);}
-  .cellnum.subbar{border-bottom:3px solid var(--ink);}
+  .cellnum.subline{border-top:3px solid var(--ink);}
   .blankcell{display:inline-block; width:28px; height:32px; line-height:28px; text-align:center; border:3px dashed var(--orange); border-radius:8px; color:#c98a3a; background:#fff7e6;}
   .blankcell.active{background:var(--yellow); animation:blink 1s infinite;}
   @keyframes blink{0%,100%{box-shadow:0 0 0 0 rgba(255,210,63,.6);}50%{box-shadow:0 0 0 5px rgba(255,210,63,0);}}
@@ -604,14 +604,21 @@
     // わる数）わられる数（屋根の線つき）
     var dcells=''; for(var d=0;d<N;d++){ dcells+='<span class="cellnum roof">'+aStr.charAt(d)+'</span>'; }
     html+='<div class="r">'+lead('<span class="divisor">'+b+'</span><span class="bracket">)</span>')+dcells+'</div>';
-    // 各位の ひく数（線つき）→ ひいた残り＋下ろした数
+    // 各位の ひく数 → ひき算の線（結果の幅）→ ひいた残り＋下ろした数
+    function remRow(textt,endCol,lineFrom,lineTo){
+      var cells=[]; for(var k=0;k<N;k++){ var lc=(k>=lineFrom&&k<=lineTo)?' subline':''; cells[k]='<span class="cellnum'+lc+'"></span>'; }
+      var start=endCol-(textt.length-1);
+      for(var j=0;j<textt.length;j++){ var col=start+j; if(col>=0&&col<N){ var lc2=(col>=lineFrom&&col<=lineTo)?' subline':''; cells[col]='<span class="cellnum'+lc2+'">'+textt.charAt(j)+'</span>'; } }
+      return '<div class="r">'+lead('')+cells.join('')+'</div>';
+    }
     for(var s=0;s<si;s++){
       var st=ld.steps[s], isLast=(s===N-1);
-      html+=cellsRow(String(st.sub), s, 'subbar');
+      html+=cellsRow(String(st.sub), s, '');                  // ひく数（線なし）
       var rtext, rcol;
       if(!isLast){ rtext=(st.rem===0?'':String(st.rem))+aStr.charAt(s+1); rcol=s+1; }
       else { rtext=String(st.rem); rcol=s; }
-      html+=cellsRow(rtext, rcol, '');
+      var lineFrom=s-(String(st.sub).length-1); if(lineFrom<0) lineFrom=0;   // ひく数の左端
+      html+=remRow(rtext, rcol, lineFrom, rcol);              // 線は ひく数〜下ろした桁（＝結果の幅）
     }
     html+='</div>';
     $('calcBox').innerHTML=html;
