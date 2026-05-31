@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>わり算ラボ ⏱️ ビーカー＆筆算</title>
+<link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{ --pink:#ff5d8f; --yellow:#ffd23f; --cyan:#00d9c0; --orange:#ff7733; --ink:#2a1a4a; --card:#fffdf7; --juice:#ffb13f; --juice2:#ff8a1f; --rem:#9b51e0;}
+  *{margin:0; padding:0; box-sizing:border-box;}
+  body{ font-family:'M PLUS Rounded 1c',sans-serif; color:var(--ink); min-height:100vh; overflow-x:hidden;
+    background:linear-gradient(160deg,#2b1055 0%,#5a3b9c 45%,#7597de 100%); display:flex; align-items:center; justify-content:center; padding:16px;}
+  .stars{position:fixed; inset:0; pointer-events:none; z-index:0;}
+  .star{position:absolute; background:#fff; border-radius:50%; opacity:.7; animation:tw 3s infinite;}
+  @keyframes tw{0%,100%{opacity:.2;}50%{opacity:.9;}}
+  .wrap{ position:relative; z-index:1; width:100%; max-width:500px; background:var(--card); border-radius:28px; padding:24px 20px;
+    box-shadow:0 16px 0 #1d0d3a, 0 24px 50px rgba(0,0,0,.45); border:4px solid #1d0d3a;}
+  h1{font-family:'Mochiy Pop One',sans-serif; font-size:28px; text-align:center; line-height:1.25; color:var(--pink); text-shadow:3px 3px 0 var(--yellow); margin-bottom:6px;}
+  .sub{text-align:center; font-size:13px; color:#7a6ba0; margin-bottom:18px; font-weight:700; line-height:1.6;}
+  .hidden{display:none !important;}
+  .stage-btn{ display:block; width:100%; text-align:left; border:3px solid var(--ink); border-radius:18px; padding:13px 16px; margin-bottom:12px; cursor:pointer;
+    background:#fff; font-family:inherit; font-weight:800; font-size:16px; color:var(--ink); box-shadow:0 5px 0 var(--ink); transition:transform .08s, box-shadow .08s;}
+  .stage-btn:hover{transform:translateY(-2px); box-shadow:0 7px 0 var(--ink);}
+  .stage-btn:active{transform:translateY(3px); box-shadow:0 2px 0 var(--ink);}
+  .stage-btn .emoji{font-size:24px; margin-right:8px; vertical-align:-3px;}
+  .stage-btn small{display:block; font-weight:700; font-size:12px; color:#8a7bb0; margin-top:3px; margin-left:34px;}
+  .s1{border-color:var(--orange); box-shadow:0 5px 0 var(--orange);}
+  .s2{border-color:#2e7de0; box-shadow:0 5px 0 #2e7de0;}
+  .s3{border-color:var(--cyan); box-shadow:0 5px 0 #0fae9c;}
+  .best{text-align:center; margin-top:12px; font-size:13px; font-weight:800; color:#7a6ba0;}
+  .hud{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:6px;}
+  .pill{background:var(--ink); color:#fff; border-radius:30px; padding:6px 12px; font-weight:800; font-size:14px; white-space:nowrap;}
+  .pill.danger{background:#c23b3b; animation:pulse .5s infinite;}
+  @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.12);}}
+  .progress-wrap{height:14px; background:#e7e0f5; border-radius:30px; overflow:hidden; margin-bottom:14px; border:3px solid var(--ink);}
+  #progressbar{height:100%; width:0%; background:linear-gradient(90deg,#00d9c0,#ffd23f,#ff5d8f); transition:width .3s;}
+  .stage-name{text-align:center; font-family:'Mochiy Pop One'; font-size:16px; color:var(--orange); margin-bottom:4px;}
+  .phase-tag{display:inline-block; font-size:12px; font-weight:800; color:#fff; padding:4px 12px; border-radius:20px; margin-bottom:6px;}
+  .tag-beaker{background:var(--juice2);} .tag-calc{background:#2e7de0;} .tag-check{background:#149a52;}
+  .rembadge{display:inline-block; background:var(--rem); color:#fff; font-size:11px; font-weight:800; padding:3px 10px; border-radius:20px; margin-left:6px;}
+  .story{text-align:center; font-size:15px; font-weight:700; color:#7a6ba0; min-height:20px; margin-bottom:4px;}
+  .problem{font-family:'Mochiy Pop One',sans-serif; text-align:center; font-size:34px; color:var(--ink); margin-bottom:10px;}
+  .instr{text-align:center; font-size:13px; font-weight:800; color:var(--orange); margin-bottom:12px; min-height:18px; line-height:1.5;}
+  .beaker-area{display:flex; justify-content:center; align-items:flex-end; gap:12px; margin-bottom:8px;}
+  .beaker{position:relative; width:54px; height:140px;}
+  .glass{position:absolute; inset:0; border:3px solid var(--ink); border-top:none; border-radius:6px 6px 16px 16px; background:rgba(255,255,255,.5); overflow:hidden;}
+  .liquid{position:absolute; left:0; right:0; bottom:0; background:linear-gradient(180deg,var(--juice),var(--juice2)); transition:height .2s ease;}
+  .liquid.isrem{background:linear-gradient(180deg,#c89bf0,var(--rem));}
+  .ticks{position:absolute; inset:0; pointer-events:none;}
+  .tick{position:absolute; left:0; width:6px; height:1px; background:rgba(42,26,74,.3);}
+  .blabel{position:absolute; bottom:-22px; left:0; right:0; text-align:center; font-size:11px; font-weight:800;}
+  .bval{position:absolute; top:-22px; left:0; right:0; text-align:center; font-size:13px; font-weight:800; color:var(--juice2);}
+  .bval.isrem{color:var(--rem);}
+  .beaker-ctrl{display:flex; justify-content:center; gap:8px; margin:28px 0 8px; flex-wrap:wrap; align-items:flex-start;}
+  .slider-row{display:flex; flex-direction:column; align-items:center; gap:4px; width:58px;}
+  .slider-row .who{font-size:11px; font-weight:800; color:#7a6ba0;}
+  .slider-row .sval{font-size:13px; font-weight:800; color:var(--juice2);}
+  input[type=range].vslider{ -webkit-appearance:none; appearance:none; writing-mode:vertical-lr; direction:rtl; width:30px; height:120px; background:transparent; cursor:pointer;}
+  input[type=range].vslider::-webkit-slider-runnable-track{ width:14px; background:#e7e0f5; border:3px solid var(--ink); border-radius:20px;}
+  input[type=range].vslider::-moz-range-track{ width:14px; background:#e7e0f5; border:3px solid var(--ink); border-radius:20px;}
+  input[type=range].vslider::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:30px; height:24px; background:var(--cyan); border:3px solid var(--ink); border-radius:8px; box-shadow:0 2px 0 var(--ink); margin-left:-11px;}
+  input[type=range].vslider::-moz-range-thumb{ width:30px; height:24px; background:var(--cyan); border:3px solid var(--ink); border-radius:8px;}
+  input[type=range].hslider{ -webkit-appearance:none; appearance:none; width:130px; height:24px; background:transparent; cursor:pointer;}
+  input[type=range].hslider::-webkit-slider-runnable-track{ height:14px; background:#e7e0f5; border:3px solid var(--ink); border-radius:20px;}
+  input[type=range].hslider::-moz-range-track{ height:14px; background:#e7e0f5; border:3px solid var(--ink); border-radius:20px;}
+  input[type=range].hslider::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:26px; height:26px; background:var(--cyan); border:3px solid var(--ink); border-radius:8px; box-shadow:0 2px 0 var(--ink); margin-top:-9px;}
+  input[type=range].hslider::-moz-range-thumb{ width:26px; height:26px; background:var(--cyan); border:3px solid var(--ink); border-radius:8px;}
+  .calc-box{font-family:'Mochiy Pop One',sans-serif; display:flex; justify-content:center; margin:6px 0 10px;}
+  .ld{display:inline-grid; row-gap:2px; font-size:24px;}
+  .ld .r{display:flex; align-items:center; height:32px;}
+  .cellnum{width:28px; text-align:center;}
+  .celldot{width:12px; text-align:center;}
+  .blankcell{display:inline-block; width:28px; height:32px; line-height:28px; text-align:center; border:3px dashed var(--orange); border-radius:8px; color:#c98a3a; background:#fff7e6;}
+  .blankcell.active{background:var(--yellow); animation:blink 1s infinite;}
+  @keyframes blink{0%,100%{box-shadow:0 0 0 0 rgba(255,210,63,.6);}50%{box-shadow:0 0 0 5px rgba(255,210,63,0);}}
+  .filledcell{color:#149a52;}
+  .qline{border-bottom:3px solid var(--ink); padding-bottom:2px;}
+  .divisor{font-size:22px; margin-right:4px;} .bracket{font-size:32px; line-height:28px; margin-right:2px;}
+  .steplist{max-width:430px; margin:4px auto 0;}
+  .stepline{display:flex; align-items:flex-start; gap:8px; background:#f3eeff; border-radius:10px; padding:7px 10px; margin-top:6px; font-family:'M PLUS Rounded 1c'; font-size:13px; font-weight:700; text-align:left; line-height:1.5;}
+  .stepline .sn{flex:none; width:20px; height:20px; border-radius:50%; background:var(--cyan); color:#fff; text-align:center; line-height:20px; font-size:12px;}
+  .stepline .se b{color:#149a52; font-size:15px;}
+  .stepline .se .remhi{color:var(--rem); font-weight:800;}
+  .choices{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:10px 0;}
+  .choice{border:3px solid var(--ink); border-radius:14px; padding:14px 0; cursor:pointer; background:#fff; font-family:'Mochiy Pop One',sans-serif; font-size:24px; color:var(--ink); box-shadow:0 4px 0 var(--ink); transition:transform .07s;}
+  .choice:hover{transform:translateY(-2px);} .choice:active{transform:translateY(2px); box-shadow:0 2px 0 var(--ink);}
+  .choice.right{background:#7CFFB2; border-color:#149a52; box-shadow:0 4px 0 #149a52;}
+  .choice.wrong{background:#ff9a9a; border-color:#c23b3b; box-shadow:0 4px 0 #c23b3b;}
+  .check-visual{text-align:center; font-family:'Mochiy Pop One'; margin:10px 0; line-height:1.5;}
+  .check-visual .mainmul{font-size:40px; color:#149a52; margin:6px 0;}
+  .check-visual .mainmul .op{color:var(--ink);}
+  .check-visual .formula{font-size:15px; color:#7a6ba0; font-weight:800;}
+  .check-visual .cf{color:#149a52;} .check-visual .cr{color:var(--rem);} .check-visual .co{color:var(--juice2);}
+  .fb{text-align:center; font-family:'Mochiy Pop One',sans-serif; font-size:18px; min-height:24px; margin-top:6px;}
+  .combo{display:inline-block; background:var(--yellow); color:var(--ink); border-radius:20px; padding:2px 10px; font-size:14px; margin-left:6px;}
+  .bigbtn{display:block; margin:10px auto 0; background:var(--pink); color:#fff; border:3px solid var(--ink); border-radius:16px; padding:11px 28px; font-family:'Mochiy Pop One',sans-serif; font-size:17px; cursor:pointer; box-shadow:0 5px 0 var(--ink);}
+  .bigbtn:active{transform:translateY(3px); box-shadow:0 2px 0 var(--ink);}
+  .bigbtn.alt{background:var(--cyan);} .bigbtn:disabled{background:#cfc7e0; cursor:not-allowed; box-shadow:0 5px 0 #9a8fbb;}
+  .hintbtn{display:block; margin:8px auto 0; background:#fff; border:3px solid var(--ink); border-radius:14px; padding:6px 14px; font-family:inherit; font-weight:800; cursor:pointer; box-shadow:0 4px 0 var(--ink); font-size:13px;}
+  .hintbox{background:#fff6d6; border:3px dashed var(--orange); border-radius:14px; padding:9px 13px; font-size:12.5px; font-weight:700; color:#9a5a1a; margin-top:10px; text-align:center; line-height:1.6;}
+  .result{text-align:center;}
+  .result .big{font-family:'Mochiy Pop One',sans-serif; font-size:28px; color:var(--pink); text-shadow:2px 2px 0 var(--yellow); margin:6px 0;}
+  .scorecard{background:#f3eeff; border:3px solid var(--ink); border-radius:18px; padding:14px; margin:12px 0; font-weight:800;}
+  .scorecard .num{font-family:'Mochiy Pop One',sans-serif; font-size:38px; color:var(--cyan);}
+  .shake{animation:shake .3s;} @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+  .pop{animation:pop .35s;} @keyframes pop{0%{transform:scale(.7);}60%{transform:scale(1.12);}100%{transform:scale(1);}}
+  #boom{position:fixed; inset:0; z-index:50; display:flex; align-items:center; justify-content:center; pointer-events:none;}
+  #boom .core{font-size:120px; animation:boomgrow .7s ease-out forwards;}
+  @keyframes boomgrow{0%{transform:scale(0); opacity:0;}40%{transform:scale(1.4); opacity:1;}100%{transform:scale(1.1); opacity:1;}}
+  .frag{position:fixed; font-size:28px; z-index:51; pointer-events:none;}
+  .wrap.blown{animation:blow .6s forwards;} @keyframes blow{0%{transform:scale(1);}30%{transform:scale(1.05) rotate(2deg);}100%{transform:scale(.2) rotate(20deg); opacity:0;}}
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+<div class="wrap" id="wrap">
+
+  <section id="home">
+    <h1>わり算ラボ</h1>
+    <div class="sub">① ビーカーで「分ける」を体験 → ② 筆算 → ③ たしかめ算<br>⏱️ 1フェーズ 30びょう！ おそいと バクハツ💥（同じ問題からやりなおし）</div>
+    <button class="stage-btn s1" data-mode="0"><span class="emoji">🧪</span>小数 ÷ 整数 ラボ<small>分けると元が減る！残りが「あまり」だよ</small></button>
+    <button class="stage-btn s2" data-mode="1"><span class="emoji">📏</span>整数 ÷ 小数 ラボ<small>「何コ分とれる？」を ビーカーで体験</small></button>
+    <button class="stage-btn s3" data-mode="2"><span class="emoji">🥤</span>小数 ÷ 小数 ラボ<small>小数を小数で分ける しくみ</small></button>
+    <div class="best" id="bestline"></div>
+  </section>
+
+  <section id="game" class="hidden">
+    <div class="hud">
+      <span class="pill">📝 <span id="qN">1</span>/10</span>
+      <span class="pill">🔥 <span id="comboN">0</span></span>
+      <span class="pill" id="timePill">⏱️ <span id="timeN">30.0</span></span>
+    </div>
+    <div class="progress-wrap"><div id="progressbar"></div></div>
+    <div class="stage-name" id="stageName"></div>
+    <div style="text-align:center;"><span class="phase-tag" id="phaseTag"></span><span class="rembadge hidden" id="remBadge">あまりが でるよ！</span></div>
+    <div class="story" id="story"></div>
+    <div class="problem" id="problem"></div>
+    <div class="instr" id="instr"></div>
+
+    <div id="beakerPhase">
+      <div class="beaker-area" id="beakerArea"></div>
+      <div class="beaker-ctrl" id="beakerCtrl"></div>
+      <button class="bigbtn" id="checkBeaker">これで分けた！</button>
+    </div>
+
+    <div id="calcPhase" class="hidden">
+      <div class="calc-box" id="calcBox"></div>
+      <div class="choices" id="choices"></div>
+    </div>
+
+    <div id="checkPhase" class="hidden">
+      <div class="check-visual" id="checkVisual"></div>
+      <div class="choices" id="checkChoices"></div>
+    </div>
+
+    <div class="fb" id="fb"></div>
+    <button class="hintbtn" id="hintbtn">💡 ヒント</button>
+    <div class="hintbox hidden" id="hintbox"></div>
+    <button class="bigbtn alt hidden" id="nextBtn">つぎへ ▶</button>
+  </section>
+
+  <section id="result" class="hidden">
+    <div class="result">
+      <div style="font-size:50px;" id="resultEmoji">🏆</div>
+      <div class="big" id="resultTitle">クリア！</div>
+      <div class="scorecard">クリアタイム<br><span class="num" id="finalTime">0.0</span><span style="font-size:18px;"> びょう</span><br>
+        <span style="font-size:13px;">せいかい <span id="finalRight">0</span>/10 ・ さいだいコンボ <span id="finalCombo">0</span></span></div>
+      <div id="newbest" class="hidden" style="color:var(--pink); font-weight:800; font-size:17px; margin-bottom:8px;">🎉 さいそくタイムこうしん！</div>
+      <button class="bigbtn" id="retry">もういちど</button>
+      <button class="bigbtn alt" id="tohome" style="margin-top:8px;">ホームへ</button>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var sc=document.getElementById('stars');
+  for(var i=0;i<36;i++){var s=document.createElement('div');s.className='star';var sz=Math.random()*3+1;s.style.width=sz+'px';s.style.height=sz+'px';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.animationDelay=Math.random()*3+'s';sc.appendChild(s);}
+
+  var TOTAL_Q=10, TIME_LIMIT=30, REM_COUNT=3;
+  var STAGE_NAMES=['🧪 小数 ÷ 整数 ラボ','📏 整数 ÷ 小数 ラボ','🥤 小数 ÷ 小数 ラボ'];
+  var mode=0, qIndex=0, combo=0, maxCombo=0, rightCount=0;
+  var startTime=0, qTimer=null, qTimeLeft=TIME_LIMIT, current=null, phase='beaker';
+  var beakerVals=[], srcRemain=0, calcState=null, dead=false, remSchedule=[], qPlan=[], missedThisQ=false;
+
+  function $(id){return document.getElementById(id);}
+  function show(id){['home','game','result'].forEach(function(x){$(x).classList.toggle('hidden',x!==id);});}
+  function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+  function pick(a){return a[Math.floor(Math.random()*a.length)];}
+  function getBest(m){try{return parseFloat(localStorage.getItem('warizanlab2_'+m)||'0');}catch(e){return 0;}}
+  function setBest(m,v){try{localStorage.setItem('warizanlab2_'+m,v);}catch(e){}}
+
+  function longDivision(a10,b){
+    var digits=String(a10).split('').map(Number); var steps=[], carry=0, qd=[];
+    for(var i=0;i<digits.length;i++){ var cur=carry*10+digits[i]; var q=Math.floor(cur/b), sub=q*b, rem=cur-sub; qd.push(q); steps.push({bring:digits[i],cur:cur,qd:q,sub:sub,rem:rem}); carry=rem; }
+    return {qd:qd, qfull:parseInt(qd.join(''),10), finalRem:carry, steps:steps};
+  }
+
+  // 余りなし候補（小数÷整数）
+  var MODE0=[]; for(var b=2;b<=5;b++){ for(var Q10=11;Q10<=25;Q10++){ var a10=Q10*b; if(a10%10!==0 && a10<=100){ MODE0.push({b:b,Q10:Q10}); } } }
+  // 余りあり候補（小数÷整数）
+  var MODE0R=[]; for(var b2=2;b2<=5;b2++){ for(var Q=11;Q<=25;Q++){ for(var r=1;r<b2;r++){ var aa=Q*b2+r; if(aa<=100){ MODE0R.push({b:b2,Q10:Q,rem10:r}); } } } }
+
+  function gen(m, withRem, forceB){
+    var o={mode:m, hasRem:!!withRem};
+    if(m===0){
+      var poolN = (withRem?MODE0R:MODE0).filter(function(P){ return forceB? P.b===forceB : true; });
+      if(poolN.length===0) poolN = withRem?MODE0R:MODE0;
+      var P = pick(poolN);
+      var rem10 = withRem ? P.rem10 : 0;
+      var a10 = P.Q10*P.b + rem10;
+      o.b=P.b; o.a10=a10; o.a=a10/10; o.ans=P.Q10/10; o.Q10=P.Q10; o.rem10=rem10; o.rem=rem10/10; o.containers=P.b;
+      o.story='🧪 '+o.a+'L のジュースを '+P.b+'人に 同じだけ！';
+      o.prob=o.a+' ÷ '+P.b;
+      o.beakerInstr='スライダーで '+P.b+'人を 同じ高さに！'+(withRem?' 元に のこる分が「あまり」':' 元を つかいきろう');
+      o.hint=(withRem? '1人ぶんは 小数第1位まで。分けられない分が 元のビーカーに のこる＝あまり。<br>' : '')+o.a+' を '+P.b+' で分けると 1人 '+o.ans+'L'+(withRem?'、あまり '+o.rem+'L':'')+'。';
+    } else if(m===1){
+      var P1=pick([{a:2,b:0.5,ans:4},{a:3,b:0.5,ans:6},{a:4,b:0.5,ans:8},{a:2,b:0.4,ans:5},{a:4,b:0.4,ans:10}]);
+      o.b=P1.b; o.a=P1.a; o.ans=P1.ans; o.rem=0; o.containers=P1.ans;
+      o.story='📏 '+P1.a+'L から '+P1.b+'L コップ なんコ分？';
+      o.prob=P1.a+' ÷ '+P1.b;
+      o.beakerInstr=P1.b+'L ずつ！ '+P1.a+'L から 何コ できる？';
+      o.hint=P1.a+'÷'+P1.b+' → '+(P1.a*10)+'÷'+Math.round(P1.b*10)+' = '+P1.ans+'。';
+      o.tenfold={A:P1.a*10,B:Math.round(P1.b*10)};
+    } else {
+      var P2=pick([{a:2.4,b:0.4,ans:6},{a:1.5,b:0.5,ans:3},{a:2.0,b:0.5,ans:4},{a:1.6,b:0.4,ans:4},{a:2.0,b:0.4,ans:5},{a:1.2,b:0.4,ans:3},{a:2.5,b:0.5,ans:5}]);
+      o.b=P2.b; o.a=P2.a; o.ans=P2.ans; o.rem=0; o.containers=P2.ans;
+      o.story='🥤 '+P2.a+'L から '+P2.b+'L コップ なんコ分？';
+      o.prob=P2.a+' ÷ '+P2.b;
+      o.beakerInstr=P2.b+'L ずつ！ '+P2.a+'L から 何コ できる？';
+      o.hint=P2.a+'÷'+P2.b+' → '+Math.round(P2.a*10)+'÷'+Math.round(P2.b*10)+' = '+P2.ans+'。';
+      o.tenfold={A:Math.round(P2.a*10),B:Math.round(P2.b*10)};
+    }
+    return o;
+  }
+
+  // ===== ビーカー =====
+  function buildBeakers(){
+    var area=$('beakerArea'), ctrl=$('beakerCtrl'); area.innerHTML=''; ctrl.innerHTML='';
+    if(current.mode===0){
+      beakerVals=[]; for(var i=0;i<current.b;i++)beakerVals.push(0);
+      srcRemain=current.a10;
+      var scaleMax=Math.max(current.a,3);
+      area.appendChild(makeBeaker('元', current.a, scaleMax, true, -1, false));
+      var maxPer=Math.round(current.a*10);
+      for(var j=0;j<current.b;j++){
+        area.appendChild(makeBeaker('', 0, scaleMax, false, j, false));
+        var col=document.createElement('div'); col.className='slider-row';
+        col.innerHTML='<div class="who">'+(j+1)+'人目</div><input type="range" class="vslider" data-i="'+j+'" min="0" max="'+maxPer+'" step="1" value="0"><div class="sval" id="sval'+j+'">0.0L</div>';
+        ctrl.appendChild(col);
+      }
+    } else {
+      beakerVals=[0]; srcRemain=Math.round(current.a*10);
+      var scaleMax2=Math.max(current.a,3);
+      area.appendChild(makeBeaker('元', current.a, scaleMax2, true, -1, false));
+      area.appendChild(makeBeaker('コップ', 0, Math.max(current.b,0.5), false, 0, false));
+      var stepL=Math.round(current.b*10), maxCups=Math.round(current.a*10);
+      var fcol=document.createElement('div'); fcol.className='slider-row'; fcol.style.width='auto';
+      fcol.innerHTML='<div class="who">'+current.b+'Lずつ →</div><input type="range" class="hslider" id="cupSlider" min="0" max="'+maxCups+'" step="'+stepL+'" value="0"><div style="font-weight:800;font-size:13px;text-align:center;margin-top:4px;">コップ <span id="cupCount" style="color:var(--juice2);font-size:22px;">0</span> コ</div>';
+      ctrl.appendChild(fcol);
+    }
+    bindPour(); refreshBeakers();
+  }
+
+  function makeBeaker(label, valL, scaleMax, isSrc, idx, isRem){
+    var d=document.createElement('div'); d.className='beaker';
+    var pct=Math.min(100, valL/scaleMax*100);
+    var ticks='', steps=Math.round(scaleMax*2);
+    for(var t=1;t<steps;t++){ ticks+='<div class="tick" style="bottom:'+(t/steps*100)+'%"></div>'; }
+    d.innerHTML='<div class="bval" data-idx="'+idx+'">'+(isSrc?valL.toFixed(1):'0.0')+'L</div><div class="glass"><div class="liquid" data-idx="'+idx+'" style="height:'+pct+'%"></div><div class="ticks">'+ticks+'</div></div><div class="blabel" data-idx="'+idx+'">'+label+'</div>';
+    return d;
+  }
+
+  function refreshBeakers(){
+    if(current.mode===0){
+      var scaleMax=Math.max(current.a,3);
+      var used=beakerVals.reduce(function(a,b){return a+b;},0);
+      srcRemain=current.a10-used;
+      // 受けビーカー
+      document.querySelectorAll('.liquid[data-idx]').forEach(function(el){
+        var idx=parseInt(el.dataset.idx);
+        if(idx<0){ // 元ビーカー：分けるほど減る
+          el.style.height=Math.min(100,(srcRemain/10)/scaleMax*100)+'%';
+          // 余りあり問題で使い切ったら、残り＝あまりとして紫に
+        } else { el.style.height=Math.min(100,(beakerVals[idx]/10)/scaleMax*100)+'%'; }
+      });
+      document.querySelectorAll('.bval[data-idx]').forEach(function(el){
+        var idx=parseInt(el.dataset.idx);
+        if(idx<0){ el.textContent=(srcRemain/10).toFixed(1)+'L'; }
+        else { el.textContent=(beakerVals[idx]/10).toFixed(1)+'L'; }
+      });
+      for(var j=0;j<current.b;j++){ var sv=$('sval'+j); if(sv) sv.textContent=(beakerVals[j]/10).toFixed(1)+'L'; }
+    } else {
+      var cups=beakerVals[0]; var cupCount=Math.floor((cups/10)/current.b + 1e-9);
+      srcRemain=Math.round(current.a*10)-cups;
+      var srcLiq=document.querySelector('.liquid[data-idx="-1"]'); var sM=Math.max(current.a,3);
+      if(srcLiq) srcLiq.style.height=Math.min(100,(srcRemain/10)/sM*100)+'%';
+      var srcBval=document.querySelector('.bval[data-idx="-1"]'); if(srcBval) srcBval.textContent=(srcRemain/10).toFixed(1)+'L';
+      var liq=document.querySelector('.liquid[data-idx="0"]'); var frac=((cups/10)/current.b)-cupCount;
+      if(liq) liq.style.height=Math.min(100,(frac>0?frac:(cupCount>0?1:0))*100)+'%';
+      var cc=$('cupCount'); if(cc) cc.textContent=cupCount;
+      var bv=document.querySelector('.bval[data-idx="0"]'); if(bv) bv.textContent=(cups/10).toFixed(1)+'L';
+    }
+  }
+
+  function bindPour(){
+    if(current.mode===0){
+      document.querySelectorAll('.vslider[data-i]').forEach(function(sl){
+        sl.oninput=function(){ if(dead)return; var i=parseInt(sl.dataset.i), want=parseInt(sl.value);
+          var others=0; beakerVals.forEach(function(v,k){ if(k!==i) others+=v; });
+          var maxAllow=current.a10-others; if(want>maxAllow){ want=maxAllow; sl.value=want; }
+          beakerVals[i]=want; refreshBeakers(); };
+      });
+    } else { var cs=$('cupSlider'); if(cs) cs.oninput=function(){ if(dead)return; beakerVals[0]=parseInt(cs.value); refreshBeakers(); }; }
+  }
+
+  function checkBeaker(){
+    if(dead)return; var ok=false, msg='';
+    if(current.mode===0){
+      var allEqual=beakerVals.every(function(v){return v===beakerVals[0];});
+      var used=beakerVals.reduce(function(a,b){return a+b;},0);
+      var leftover=current.a10-used;
+      if(current.hasRem){
+        // 各人=商, 残り=あまり
+        if(allEqual && beakerVals[0]===current.Q10 && leftover===current.rem10){ ok=true; msg='ぴったり！ 1人 '+current.ans+'L、元に '+current.rem+'L のこった＝あまり！'; }
+        else if(!allEqual){ msg='みんな 同じ高さに しよう！'; }
+        else if(beakerVals[0]>current.Q10){ msg='分けすぎ！ あまりが 出るように 少し へらそう'; }
+        else { msg='1人 '+current.ans+'L ずつ。元に '+current.rem+'L のこるはず（いま元 '+(leftover/10).toFixed(1)+'L）'; }
+      } else {
+        if(allEqual && used===current.a10){ ok=true; msg='ぴったり！ 1人ぶん '+current.ans+'L だね'; }
+        else if(!allEqual){ msg='みんな 同じ高さに しよう！'; }
+        else { msg='元を つかいきろう（いま元 '+(leftover/10).toFixed(1)+'L のこってる）'; }
+      }
+    } else {
+      var cups=beakerVals[0], cupCount=Math.floor((cups/10)/current.b+1e-9);
+      if(cupCount===current.ans && Math.abs(cups/10-current.a)<0.001){ ok=true; msg='ぴったり '+current.ans+'コ できた！'; }
+      else if(cups/10>current.a){ msg='元より多いよ！ へらそう'; }
+      else { msg='元を つかいきろう（いま '+cupCount+'コ）'; }
+    }
+    var fb=$('fb');
+    if(ok){ fb.innerHTML=msg; fb.style.color='#149a52'; $('checkBeaker').disabled=true; setTimeout(goCalc,900); }
+    else { fb.innerHTML=msg; fb.style.color='#c23b3b'; var box=$('wrap'); box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake'); }
+  }
+
+  // ===== 筆算 =====
+  function goCalc(){
+    phase='calc';
+    $('beakerPhase').classList.add('hidden'); $('calcPhase').classList.remove('hidden'); $('checkPhase').classList.add('hidden');
+    $('phaseTag').textContent='② ひっ算'; $('phaseTag').className='phase-tag tag-calc';
+    $('fb').innerHTML=''; $('hintbox').classList.add('hidden');
+    startQTimer(TIME_LIMIT);
+    if(current.mode===0){ calcState={ld:longDivision(current.a10,current.b),stepIdx:0}; renderLong(); }
+    else { buildTenfold(); }
+  }
+
+  function renderLong(){
+    var ld=calcState.ld, b=current.b;
+    var aStr=String(current.a), cols=aStr.split('');
+    var qi=0, qrow='<div class="r qline" style="margin-left:40px;">';
+    cols.forEach(function(ch){
+      if(ch==='.'){ qrow+='<span class="celldot">.</span>'; return; }
+      if(qi<calcState.stepIdx) qrow+='<span class="cellnum filledcell">'+ld.qd[qi]+'</span>';
+      else if(qi===calcState.stepIdx) qrow+='<span class="cellnum"><span class="blankcell active">?</span></span>';
+      else qrow+='<span class="cellnum"><span class="blankcell">_</span></span>';
+      qi++;
+    });
+    qrow+='</div>';
+    var drow='<div class="r"><span class="divisor">'+b+'</span><span class="bracket">)</span>';
+    cols.forEach(function(ch){ drow+= ch==='.' ? '<span class="celldot">.</span>' : '<span class="cellnum">'+ch+'</span>'; });
+    drow+='</div>';
+    var steps='';
+    for(var s=0;s<calcState.stepIdx;s++){
+      var st=ld.steps[s];
+      var isLast=(s===ld.steps.length-1);
+      var tail = !isLast ? '（つぎに '+ld.steps[s+1].bring+' を下ろす）'
+               : (st.rem===0 ? '（わりきれた！）' : '（のこり <span class="remhi">'+(st.rem/10).toFixed(1)+'L</span> が あまり！元のビーカーと同じ）');
+      steps+='<div class="stepline"><span class="sn">'+(s+1)+'</span><span class="se">'+st.cur+' ÷ '+b+' → 商 <b>'+st.qd+'</b>、'+st.qd+'×'+b+'='+st.sub+'、'+st.cur+'−'+st.sub+'='+st.rem+tail+'</span></div>';
+    }
+    $('calcBox').innerHTML='<div class="ld">'+qrow+drow+'</div>'+(steps?'<div class="steplist">'+steps+'</div>':'');
+    var correct=ld.qd[calcState.stepIdx];
+    var opts=makeDigitChoices(correct); var ch=$('choices'); ch.innerHTML='';
+    opts.forEach(function(v){ var bb=document.createElement('button'); bb.className='choice'; bb.textContent=v; bb.onclick=function(){pickDigit(v,bb,correct);}; ch.appendChild(bb); });
+    var cur=ld.steps[calcState.stepIdx];
+    $('instr').innerHTML='いまの計算：<b>'+cur.cur+' ÷ '+b+'</b> の 商は？';
+  }
+  function makeDigitChoices(correct){ var set={}; set[correct]=1; var arr=[correct]; while(arr.length<4){var w=rnd(0,9); if(!set[w]){set[w]=1;arr.push(w);}} return arr.sort(function(a,b){return a-b;}); }
+  function pickDigit(v,btn,correct){
+    if(dead)return;
+    if(v===correct){ btn.classList.add('right'); calcState.stepIdx++;
+      if(calcState.stepIdx>=calcState.ld.qd.length){ setTimeout(goCheck,700); }
+      else { $('fb').innerHTML='その位 せいかい！'; $('fb').style.color='#149a52'; setTimeout(renderLong,450); }
+    } else { btn.classList.add('wrong'); missedThisQ=true; $('fb').innerHTML='この位は '+correct+' だよ'; $('fb').style.color='#c23b3b';
+      var box=$('wrap'); box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake');
+      [].forEach.call($('choices').children,function(c){if(parseInt(c.textContent)===correct)c.classList.add('right');});
+      setTimeout(function(){ calcState.stepIdx++; if(calcState.stepIdx>=calcState.ld.qd.length){ goCheck(); } else { renderLong(); } },750);
+    }
+  }
+
+  function buildTenfold(){
+    var tf=current.tenfold;
+    $('calcBox').innerHTML='<div style="font-family:\'Mochiy Pop One\';text-align:center;line-height:2;"><div style="font-size:26px;">'+current.a+' ÷ '+current.b+'</div><div style="font-size:14px;color:#7a6ba0;">↓ 両方を 10ばい</div><div style="font-size:30px;color:var(--juice2);">'+tf.A+' ÷ '+tf.B+' = ?</div></div>';
+    var correct=current.ans, opts=makeNumChoices(correct); var ch=$('choices'); ch.innerHTML='';
+    opts.forEach(function(v){ var b=document.createElement('button'); b.className='choice'; b.textContent=v;
+      b.onclick=function(){ if(dead)return; if(v===correct){b.classList.add('right'); setTimeout(goCheck,700);} else {b.classList.add('wrong'); missedThisQ=true; [].forEach.call(ch.children,function(c){if(parseInt(c.textContent)===correct)c.classList.add('right');}); var bx=$('wrap');bx.classList.remove('shake');void bx.offsetWidth;bx.classList.add('shake'); setTimeout(goCheck,750);} };
+      ch.appendChild(b); });
+    $('instr').innerHTML='整数の わり算は？';
+  }
+  function makeNumChoices(correct){ var set={}; set[correct]=1; var arr=[correct]; while(arr.length<4){var w=correct+pick([-2,-1,1,2,3,-3]); if(w>0&&!set[w]){set[w]=1;arr.push(w);}} return arr.sort(function(a,b){return a-b;}); }
+
+  // ===== たしかめ算 =====
+  function goCheck(){
+    phase='check';
+    $('calcPhase').classList.add('hidden'); $('checkPhase').classList.remove('hidden');
+    $('phaseTag').textContent='③ たしかめ算'; $('phaseTag').className='phase-tag tag-check';
+    $('fb').innerHTML=''; startQTimer(TIME_LIMIT);
+    // 元の数（被除数）を隠す：問題式とストーリーを伏せて、計算しないと分からないようにする
+    $('problem').textContent='？ ÷ '+current.b+' = '+current.ans+(current.hasRem?' あまり '+current.rem:'');
+    $('story').textContent='もとの 数（？）は いくつだったかな？';
+    var b=current.b, ans=current.ans, rem=current.rem||0, a=current.a;
+    if(current.hasRem){
+      $('instr').innerHTML='まず かけ算をして、あまりを たそう！';
+      $('checkVisual').innerHTML='<div class="mainmul"><span class="cf">'+ans+'</span> <span class="op">×</span> '+b+' <span class="op">＝</span> ?</div><div class="formula">そのあと ＋ あまり <span class="cr">'+rem+'</span> で もとの数？</div>';
+    } else {
+      $('instr').innerHTML='かけ算をして、もとの数に もどるか たしかめよう！';
+      $('checkVisual').innerHTML='<div class="formula">商 × わる数 ＝ もと？</div><div class="mainmul"><span class="cf">'+ans+'</span> <span class="op">×</span> '+b+' <span class="op">＝</span> ?</div>';
+    }
+    var correct=a; // もとの数に戻る
+    var set={}; set[correct]=1; var arr=[correct];
+    var deltas=[0.1,-0.1,0.2,-0.2,1,-1,b*0.1,-b*0.1];
+    while(arr.length<4){ var w=Math.round((correct+pick(deltas))*10)/10; if(w>0&&!set[w]){set[w]=1;arr.push(w);} }
+    arr.sort(function(x,y){return x-y;});
+    var ch=$('checkChoices'); ch.innerHTML='';
+    arr.forEach(function(v){ var bb=document.createElement('button'); bb.className='choice'; bb.textContent=v; bb.onclick=function(){pickCheck(v,bb,correct);}; ch.appendChild(bb); });
+  }
+  function pickCheck(v,btn,correct){
+    if(dead)return;
+    if(Math.abs(v-correct)<1e-9){ btn.classList.add('right');
+      var extra = current.hasRem ? (current.ans+'×'+current.b+'+'+current.rem+'='+current.a+' で もとに もどった！') : (current.ans+'×'+current.b+'='+current.a+' で もとに もどった！');
+      finishQuestion(true, extra);
+    } else { btn.classList.add('wrong'); missedThisQ=true; [].forEach.call($('checkChoices').children,function(c){if(Math.abs(parseFloat(c.textContent)-correct)<1e-9)c.classList.add('right');});
+      var bx=$('wrap');bx.classList.remove('shake');void bx.offsetWidth;bx.classList.add('shake');
+      finishQuestion(false,'もとは '+correct+' だね'); }
+  }
+
+  function finishQuestion(fullyOk,msg){
+    if(dead)return; clearInterval(qTimer);
+    var ok=fullyOk && !missedThisQ;
+    if(ok){ combo++; if(combo>maxCombo)maxCombo=combo; rightCount++; $('fb').innerHTML=msg+(combo>1?'<span class="combo">🔥'+combo+'</span>':''); $('fb').style.color='#149a52'; }
+    else { combo=0; $('fb').innerHTML=msg; $('fb').style.color='#c23b3b'; }
+    $('comboN').textContent=combo; $('checkChoices').innerHTML=''; $('choices').innerHTML='';
+    $('nextBtn').classList.remove('hidden');
+  }
+
+  function nextQuestion(){ qIndex++; $('progressbar').style.width=(qIndex/TOTAL_Q*100)+'%'; if(qIndex>=TOTAL_Q){ endGame(false); return; } loadQuestion(); }
+
+  function startQTimer(limit){
+    clearInterval(qTimer); qTimeLeft=limit; var danger=Math.max(5,limit/3);
+    $('timeN').textContent=qTimeLeft.toFixed(1); $('timePill').classList.remove('danger');
+    qTimer=setInterval(function(){ qTimeLeft-=0.1; if(qTimeLeft<=danger)$('timePill').classList.add('danger');
+      if(qTimeLeft<=0){ qTimeLeft=0; $('timeN').textContent='0.0'; explode(); return; } $('timeN').textContent=qTimeLeft.toFixed(1); },100);
+  }
+
+  var audioCtx=null;
+  function playBoom(){
+    try{ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); var ctx=audioCtx, now=ctx.currentTime;
+      var dur=0.8, sr=ctx.sampleRate, buf=ctx.createBuffer(1,sr*dur,sr), data=buf.getChannelData(0);
+      for(var i=0;i<data.length;i++){ data[i]=(Math.random()*2-1)*Math.pow(1-i/data.length,2); }
+      var noise=ctx.createBufferSource(); noise.buffer=buf;
+      var nf=ctx.createBiquadFilter(); nf.type='lowpass'; nf.frequency.setValueAtTime(900,now); nf.frequency.exponentialRampToValueAtTime(120,now+0.5);
+      var ng=ctx.createGain(); ng.gain.setValueAtTime(0.9,now); ng.gain.exponentialRampToValueAtTime(0.001,now+dur);
+      noise.connect(nf); nf.connect(ng); ng.connect(ctx.destination); noise.start(now);
+      var osc=ctx.createOscillator(); osc.type='sine'; osc.frequency.setValueAtTime(160,now); osc.frequency.exponentialRampToValueAtTime(40,now+0.4);
+      var og=ctx.createGain(); og.gain.setValueAtTime(0.8,now); og.gain.exponentialRampToValueAtTime(0.001,now+0.5);
+      osc.connect(og); og.connect(ctx.destination); osc.start(now); osc.stop(now+0.5);
+    }catch(e){}
+  }
+
+  function explode(){
+    if(dead)return; dead=true; clearInterval(qTimer); playBoom();
+    var boom=document.createElement('div'); boom.id='boom'; boom.innerHTML='<div class="core">💥</div>'; document.body.appendChild(boom);
+    var frags=['🧨','💥','🔥','⭐','🍊','💦'];
+    for(var i=0;i<16;i++){ (function(){ var f=document.createElement('div'); f.className='frag'; f.textContent=pick(frags); f.style.left='50%'; f.style.top='50%'; document.body.appendChild(f);
+      var ang=Math.random()*Math.PI*2, dist=120+Math.random()*220;
+      f.animate([{transform:'translate(-50%,-50%) scale(.4)',opacity:1},{transform:'translate('+(Math.cos(ang)*dist)+'px,'+(Math.sin(ang)*dist)+'px) scale(1.4)',opacity:0}],{duration:700+Math.random()*300,easing:'ease-out',fill:'forwards'}); })(); }
+    $('wrap').classList.add('blown');
+    setTimeout(function(){ if(boom.parentNode)boom.parentNode.removeChild(boom); document.querySelectorAll('.frag').forEach(function(f){f.remove();}); $('wrap').classList.remove('blown'); dead=false; reloadSameQuestion(); },1200);
+  }
+
+  // 同じ問題を最初（ビーカー）からやり直し
+  function reloadSameQuestion(){
+    phase='beaker'; missedThisQ=false;
+    $('phaseTag').textContent='① ビーカーで分ける'; $('phaseTag').className='phase-tag tag-beaker';
+    $('remBadge').classList.toggle('hidden', !current.hasRem);
+    $('story').textContent=current.story; $('problem').textContent=current.prob+' = ?';
+    $('instr').textContent=current.beakerInstr;
+    $('beakerPhase').classList.remove('hidden'); $('calcPhase').classList.add('hidden'); $('checkPhase').classList.add('hidden');
+    $('checkBeaker').disabled=false; $('nextBtn').classList.add('hidden');
+    $('fb').innerHTML='やりなおし！ もういちど 分けてみよう'; $('fb').style.color='#c23b3b';
+    $('hintbox').classList.add('hidden'); $('hintbox').innerHTML=current.hint;
+    buildBeakers(); startQTimer(TIME_LIMIT);
+  }
+
+  function loadQuestion(){
+    var plan = (mode===0 && qPlan[qIndex]) ? qPlan[qIndex] : {b:null, rem:false};
+    current=gen(mode, mode===0 ? plan.rem : false, mode===0 ? plan.b : null);
+    phase='beaker'; missedThisQ=false;
+    $('qN').textContent=qIndex+1; $('stageName').textContent=STAGE_NAMES[mode];
+    $('phaseTag').textContent='① ビーカーで分ける'; $('phaseTag').className='phase-tag tag-beaker';
+    $('remBadge').classList.toggle('hidden', !current.hasRem);
+    $('story').textContent=current.story; $('problem').textContent=current.prob+' = ?';
+    $('problem').classList.remove('pop'); void $('problem').offsetWidth; $('problem').classList.add('pop');
+    $('instr').textContent=current.beakerInstr;
+    $('beakerPhase').classList.remove('hidden'); $('calcPhase').classList.add('hidden'); $('checkPhase').classList.add('hidden');
+    $('checkBeaker').disabled=false; $('nextBtn').classList.add('hidden');
+    $('fb').innerHTML=''; $('hintbox').classList.add('hidden'); $('hintbox').innerHTML=current.hint;
+    buildBeakers(); startQTimer(TIME_LIMIT);
+  }
+
+  // 難易度プランを作る：やさしい→難しいの流れ＋少しランダムに揺らす
+  function buildPlan(){
+    qPlan=[];
+    if(mode!==0){ for(var i=0;i<TOTAL_Q;i++) qPlan.push({b:null,rem:false}); return; }
+    // 割る数の難易度: 序盤は2,3中心 → 後半は4,5中心。各問に割る数を割り当て
+    // ベースの並び（やさしい順）
+    var base=[2,2,3,3,4,3,4,5,4,5];
+    // 隣同士をときどき入れ替えて一本調子を崩す
+    for(var k=0;k<base.length-1;k++){ if(Math.random()<0.35){ var t=base[k]; base[k]=base[k+1]; base[k+1]=t; } }
+    // 余りあり回の配置：1問目は必ず割り切れ。中盤以降(3問目=index2 以降)から3つ選ぶ
+    var remPool=[]; for(var j=2;j<TOTAL_Q;j++) remPool.push(j);
+    remPool.sort(function(){return Math.random()-0.5;});
+    var remSet={}; remPool.slice(0,REM_COUNT).forEach(function(idx){ remSet[idx]=true; });
+    for(var q=0;q<TOTAL_Q;q++){ qPlan.push({b:base[q], rem:!!remSet[q]}); }
+  }
+
+  function startGame(m){
+    mode=m; qIndex=0; combo=0; maxCombo=0; rightCount=0; dead=false;
+    $('comboN').textContent=0; $('progressbar').style.width='0%';
+    buildPlan();
+    show('game'); loadQuestion(); startTime=Date.now();
+  }
+
+  function endGame(byBoom){
+    clearInterval(qTimer);
+    var total=Math.round((Date.now()-startTime)/100)/10;
+    $('resultEmoji').textContent= byBoom?'💥':'🏆';
+    $('resultTitle').textContent= byBoom?'タイムアップ！':'ぜんぶクリア！';
+    $('finalTime').textContent=total.toFixed(1); $('finalRight').textContent=rightCount; $('finalCombo').textContent=maxCombo;
+    var b=getBest(mode);
+    if(!byBoom && rightCount>=8 && (b===0||total<b)){ setBest(mode,total); $('newbest').classList.remove('hidden'); } else $('newbest').classList.add('hidden');
+    show('result');
+  }
+
+  [].forEach.call(document.querySelectorAll('.stage-btn'),function(b){ b.onclick=function(){ startGame(parseInt(b.dataset.mode)); }; });
+  $('checkBeaker').onclick=checkBeaker; $('nextBtn').onclick=nextQuestion;
+  $('hintbtn').onclick=function(){ $('hintbox').classList.toggle('hidden'); };
+  $('retry').onclick=function(){ startGame(mode); };
+  $('tohome').onclick=function(){ clearInterval(qTimer); show('home'); };
+})();
+</script>
+</body>
+</html>
