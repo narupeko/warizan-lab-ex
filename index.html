@@ -574,8 +574,13 @@
     }
     var correct=a; // もとの数に戻る
     var set={}; set[correct]=1; var arr=[correct];
-    var deltas=[0.1,-0.1,0.2,-0.2,1,-1,b*0.1,-b*0.1];
-    while(arr.length<4){ var w=Math.round((correct+pick(deltas))*10)/10; if(w>0&&!set[w]){set[w]=1;arr.push(w);} }
+    if(current.mode===3){
+      var ideltas=[1,-1,2,-2,b,-b,10,-10];
+      while(arr.length<4){ var iw=correct+pick(ideltas); if(iw>0&&!set[iw]){set[iw]=1;arr.push(iw);} }
+    } else {
+      var deltas=[0.1,-0.1,0.2,-0.2,1,-1,b*0.1,-b*0.1];
+      while(arr.length<4){ var w=Math.round((correct+pick(deltas))*10)/10; if(w>0&&!set[w]){set[w]=1;arr.push(w);} }
+    }
     arr.sort(function(x,y){return x-y;});
     var ch=$('checkChoices'); ch.innerHTML='';
     arr.forEach(function(v){ var bb=document.createElement('button'); bb.className='choice'; bb.textContent=v; bb.onclick=function(){pickCheck(v,bb,correct);}; ch.appendChild(bb); });
