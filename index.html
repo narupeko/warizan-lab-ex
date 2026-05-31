@@ -27,6 +27,14 @@
   .s1{border-color:var(--orange); box-shadow:0 5px 0 var(--orange);}
   .s2{border-color:#2e7de0; box-shadow:0 5px 0 #2e7de0;}
   .s3{border-color:var(--cyan); box-shadow:0 5px 0 #0fae9c;}
+  .s4{border-color:#0aa; box-shadow:0 5px 0 #088;}
+  #intMenu{margin:-4px 0 12px; padding:10px; border:3px dashed #0aa; border-radius:16px; background:#e8fbff;}
+  #intMenu .mtitle{font-size:12px; font-weight:800; color:#077; text-align:center; margin-bottom:8px;}
+  #intMenu .mbtns{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  #intMenu button{border:3px solid var(--ink); border-radius:14px; padding:10px 6px; cursor:pointer; background:#fff;
+    font-family:inherit; font-weight:800; font-size:14px; color:var(--ink); box-shadow:0 4px 0 var(--ink);}
+  #intMenu button:active{transform:translateY(2px); box-shadow:0 2px 0 var(--ink);}
+  #intMenu button small{display:block; font-weight:700; font-size:11px; color:#888; margin-top:2px;}
   .best{text-align:center; margin-top:12px; font-size:13px; font-weight:800; color:#7a6ba0;}
   .hud{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:6px;}
   .pill{background:var(--ink); color:#fff; border-radius:30px; padding:6px 12px; font-weight:800; font-size:14px; white-space:nowrap;}
@@ -41,6 +49,15 @@
   .story{text-align:center; font-size:15px; font-weight:700; color:#7a6ba0; min-height:20px; margin-bottom:4px;}
   .problem{font-family:'Mochiy Pop One',sans-serif; text-align:center; font-size:34px; color:var(--ink); margin-bottom:10px;}
   .instr{text-align:center; font-size:13px; font-weight:800; color:var(--orange); margin-bottom:12px; min-height:18px; line-height:1.5;}
+  .bundles{display:flex; flex-direction:column; gap:10px; align-items:center; margin:6px 0;}
+  .brow{display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:center;}
+  .brow .blab{font-size:12px; font-weight:800; color:#077; width:80px; text-align:right;}
+  .tab{display:inline-block; width:10px; height:30px; background:linear-gradient(180deg,#ffd23f,#ff9a1f); border:2px solid var(--ink); border-radius:3px;}
+  .bara{display:inline-block; width:10px; height:10px; background:#00d9c0; border:2px solid var(--ink); border-radius:50%;}
+  .bgroup{display:inline-flex; gap:3px; padding:3px 5px; border:2px dashed #bbb; border-radius:8px; min-height:20px;}
+  .bperson{display:inline-flex; flex-direction:column; align-items:center; gap:2px; font-size:11px; font-weight:800; color:#555;}
+  .intslider-row{display:flex; flex-direction:column; align-items:center; gap:4px; margin-top:8px;}
+  .intslider-row .sval{font-size:14px; font-weight:800; color:var(--juice2);}
   .beaker-area{display:flex; justify-content:center; align-items:flex-end; gap:12px; margin-bottom:8px;}
   .beaker{position:relative; width:54px; height:140px;}
   .glass{position:absolute; inset:0; border:3px solid var(--ink); border-top:none; border-radius:6px 6px 16px 16px; background:rgba(255,255,255,.5); overflow:hidden;}
@@ -66,6 +83,19 @@
   input[type=range].hslider::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:26px; height:26px; background:var(--cyan); border:3px solid var(--ink); border-radius:8px; box-shadow:0 2px 0 var(--ink); margin-top:-9px;}
   input[type=range].hslider::-moz-range-thumb{ width:26px; height:26px; background:var(--cyan); border:3px solid var(--ink); border-radius:8px;}
   .calc-box{font-family:'Mochiy Pop One',sans-serif; display:flex; justify-content:center; margin:6px 0 10px;}
+  .h4{display:inline-block; font-family:'Mochiy Pop One',sans-serif;}
+  .h4 .hr{display:grid; grid-auto-flow:column; justify-content:start; column-gap:0; height:34px; align-items:center;}
+  .h4 .hc{width:30px; text-align:center; font-size:26px;}
+  .h4 .lead{width:34px; text-align:right; font-size:22px; padding-right:2px;}
+  .h4 .qrow .hc{color:#149a52;}
+  .h4 .qblank{display:inline-block; width:24px; height:30px; line-height:26px; border:3px dashed var(--orange); border-radius:8px; color:#c98a3a; background:#fff7e6;}
+  .h4 .qblank.active{background:var(--yellow); animation:blink 1s infinite;}
+  .h4 .barline{border-top:3px solid var(--ink);}
+  .step4btns{display:flex; justify-content:center; gap:6px; flex-wrap:wrap; margin:8px 0;}
+  .step4btns button{border:3px solid var(--ink); border-radius:12px; padding:8px 12px; font-family:inherit; font-weight:800; font-size:14px; background:#fff; color:var(--ink); box-shadow:0 4px 0 var(--ink); cursor:pointer;}
+  .step4btns button.on{background:var(--cyan); animation:blink 1s infinite;}
+  .step4btns button.done{background:#7CFFB2; border-color:#149a52; box-shadow:0 4px 0 #149a52;}
+  .step4btns button:disabled{opacity:.4; cursor:not-allowed;}
   .ld{display:inline-grid; row-gap:2px; font-size:24px;}
   .ld .r{display:flex; align-items:center; height:32px;}
   .cellnum{width:28px; text-align:center;}
@@ -121,6 +151,14 @@
     <button class="stage-btn s1" data-mode="0"><span class="emoji">🧪</span>小数 ÷ 整数 ラボ<small>分けると元が減る！残りが「あまり」だよ</small></button>
     <button class="stage-btn s2" data-mode="1"><span class="emoji">📏</span>整数 ÷ 小数 ラボ<small>「何コ分とれる？」を ビーカーで体験</small></button>
     <button class="stage-btn s3" data-mode="2"><span class="emoji">🥤</span>小数 ÷ 小数 ラボ<small>小数を小数で分ける しくみ</small></button>
+    <button class="stage-btn s4" id="intStageBtn"><span class="emoji">➗</span>2ケタ ÷ 1ケタ ラボ<small>たば＆ばらで分けて、はじめての筆算！</small></button>
+    <div id="intMenu" class="hidden">
+      <div class="mtitle">どっちで やる？</div>
+      <div class="mbtns">
+        <button data-variant="A" data-timed="0">🌱 れんしゅう<small>タイマー無し・4ステップ筆算</small></button>
+        <button data-variant="B" data-timed="1">🔥 ちょうせん<small>タイマーあり・数字えらび</small></button>
+      </div>
+    </div>
     <div class="best" id="bestline"></div>
   </section>
 
@@ -178,8 +216,8 @@
   for(var i=0;i<36;i++){var s=document.createElement('div');s.className='star';var sz=Math.random()*3+1;s.style.width=sz+'px';s.style.height=sz+'px';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.animationDelay=Math.random()*3+'s';sc.appendChild(s);}
 
   var TOTAL_Q=10, TIME_LIMIT=30, REM_COUNT=3;
-  var STAGE_NAMES=['🧪 小数 ÷ 整数 ラボ','📏 整数 ÷ 小数 ラボ','🥤 小数 ÷ 小数 ラボ'];
-  var mode=0, qIndex=0, combo=0, maxCombo=0, rightCount=0;
+  var STAGE_NAMES=['🧪 小数 ÷ 整数 ラボ','📏 整数 ÷ 小数 ラボ','🥤 小数 ÷ 小数 ラボ','➗ 2ケタ ÷ 1ケタ ラボ'];
+  var mode=0, qIndex=0, combo=0, maxCombo=0, rightCount=0, variant='A', timed=true;
   var startTime=0, qTimer=null, qTimeLeft=TIME_LIMIT, current=null, phase='beaker';
   var beakerVals=[], srcRemain=0, calcState=null, dead=false, remSchedule=[], qPlan=[], missedThisQ=false;
 
@@ -196,12 +234,68 @@
     return {qd:qd, qfull:parseInt(qd.join(''),10), finalRem:carry, steps:steps};
   }
 
+  // A型筆算の段組みモデル：各位の積／ひいた残り＋おろし を列位置つきで返す
+  function hissanModel(a,b){
+    var ld=longDivision(a,b);
+    var digits=String(a).split('').map(Number);
+    var rows=[];
+    ld.steps.forEach(function(st,i){
+      // 積（商d×b）：いま処理した桁 i に右そろえ
+      rows.push({kind:'product', pos:i, endCol:i, val:String(st.sub)});
+      var isLast=(i===ld.steps.length-1);
+      var val, endCol;
+      if(!isLast){
+        // ひいた残り st.rem に 次の桁を おろす。残り0なら先頭0は書かない
+        val=(st.rem===0? '' : String(st.rem)) + String(digits[i+1]);
+        endCol=i+1;
+      } else {
+        val=String(st.rem); endCol=i; // 最後＝あまり（0ならわりきれ）
+      }
+      rows.push({kind:'remainder', pos:i, endCol:endCol, val:val});
+    });
+    return {ld:ld, digits:digits, N:digits.length, rows:rows, qd:ld.qd, finalRem:ld.finalRem};
+  }
+
   // 余りなし候補（小数÷整数）
   var MODE0=[]; for(var b=2;b<=5;b++){ for(var Q10=11;Q10<=25;Q10++){ var a10=Q10*b; if(a10%10!==0 && a10<=100){ MODE0.push({b:b,Q10:Q10}); } } }
   // 余りあり候補（小数÷整数）
   var MODE0R=[]; for(var b2=2;b2<=5;b2++){ for(var Q=11;Q<=25;Q++){ for(var r=1;r<b2;r++){ var aa=Q*b2+r; if(aa<=100){ MODE0R.push({b:b2,Q10:Q,rem10:r}); } } } }
 
+  // ===== 整数 2ケタ÷1ケタ プール（商は必ず2ケタ＝十の位に商が立つ） =====
+  var INT_POOL=[], INT_POOL_R=[];
+  for(var ib=2; ib<=9; ib++){
+    for(var iq=10; iq<=99; iq++){
+      var ia=ib*iq;
+      if(ia>=10 && ia<=99){ INT_POOL.push({a:ia,b:ib,ans:iq,rem:0}); }
+    }
+  }
+  for(var jb=2; jb<=9; jb++){
+    for(var jq=10; jq<=99; jq++){
+      for(var jr=1; jr<jb; jr++){
+        var ja=jb*jq+jr;
+        if(ja>=10 && ja<=99){ INT_POOL_R.push({a:ja,b:jb,ans:jq,rem:jr}); }
+      }
+    }
+  }
+
+  function genInt(withRem, variantSel, forceB){
+    var o={mode:3, hasRem:!!withRem, variant:variantSel||'A'};
+    var pool=(withRem?INT_POOL_R:INT_POOL).filter(function(P){ return forceB? P.b===forceB : true; });
+    if(pool.length===0) pool=(withRem?INT_POOL_R:INT_POOL);
+    var P=pick(pool);
+    o.a=P.a; o.b=P.b; o.ans=P.ans; o.rem=P.rem||0;
+    o.tens=Math.floor(P.a/10); o.ones=P.a%10;
+    o.containers=P.b;
+    o.story='🍬 '+P.a+'こ の あめを '+P.b+'人に 同じだけ！';
+    o.prob=P.a+' ÷ '+P.b;
+    o.beakerInstr='まず「10のたば」から 分けよう！'+(withRem?' 分けきれない分が あまり':'');
+    o.hint='10のたば'+o.tens+'本＋ばら'+o.ones+'本。十の位→一の位の順に '+P.b+'人へ。<br>'
+         +'こたえ '+P.ans+(withRem?' あまり '+o.rem:'')+'。';
+    return o;
+  }
+
   function gen(m, withRem, forceB){
+    if(m===3){ return genInt(withRem, variant, forceB); }
     var o={mode:m, hasRem:!!withRem};
     if(m===0){
       var poolN = (withRem?MODE0R:MODE0).filter(function(P){ return forceB? P.b===forceB : true; });
@@ -237,6 +331,7 @@
   // ===== ビーカー =====
   function buildBeakers(){
     var area=$('beakerArea'), ctrl=$('beakerCtrl'); area.innerHTML=''; ctrl.innerHTML='';
+    if(current.mode===3){ buildBundles(); return; }
     if(current.mode===0){
       beakerVals=[]; for(var i=0;i<current.b;i++)beakerVals.push(0);
       srcRemain=current.a10;
@@ -262,6 +357,47 @@
     bindPour(); refreshBeakers();
   }
 
+  var bundleStage='tens', tensPer=0, onesPer=0;
+  function buildBundles(){
+    bundleStage='tens'; tensPer=0; onesPer=0;
+    renderBundles();
+  }
+  function renderBundles(){
+    var area=$('beakerArea'), ctrl=$('beakerCtrl');
+    var b=current.b, tens=current.tens, ones=current.ones;
+    var tensGiven=tensPer*b, tensLeft=tens-tensGiven;
+    var onesPool=ones + (bundleStage==='ones'? tensLeft*10 : 0);
+    var onesGiven=onesPer*b, onesLeft=onesPool-onesGiven;
+    function tabs(n){ var s=''; for(var i=0;i<n;i++) s+='<span class="tab"></span>'; return s; }
+    function baras(n){ var s=''; for(var i=0;i<n;i++) s+='<span class="bara"></span>'; return s; }
+    var people='';
+    for(var p=0;p<b;p++){
+      people+='<div class="bperson"><div class="bgroup">'+tabs(tensPer)+baras(onesPer)+'</div>'+(p+1)+'人目</div>';
+    }
+    var srcTabs = bundleStage==='tens'? tensLeft : 0;
+    var srcBaras = bundleStage==='tens'? ones : onesLeft;
+    area.innerHTML=
+      '<div class="bundles">'
+      +'<div class="brow"><span class="blab">のこり→</span><div class="bgroup">'+tabs(srcTabs)+baras(srcBaras)+'</div></div>'
+      +'<div class="brow" style="gap:12px">'+people+'</div>'
+      +'</div>';
+    var label = bundleStage==='tens'
+      ? '十の位：たば'+tens+'本を '+b+'人に 同じだけ（1人 何本ずつ？）'
+      : 'あまったたば'+(tens-tensPer*b)+'本→ばら'+((tens-tensPer*b)*10)+'本に！ ばら'+onesPool+'本を '+b+'人に';
+    var maxPer = bundleStage==='tens'? Math.floor(tens/b) : Math.floor(onesPool/b);
+    var cur = bundleStage==='tens'? tensPer : onesPer;
+    ctrl.innerHTML=
+      '<div class="intslider-row" style="width:100%">'
+      +'<div style="font-size:12px;font-weight:800;color:#077;text-align:center">'+label+'</div>'
+      +'<input type="range" class="hslider" id="intSlider" min="0" max="'+Math.max(maxPer,0)+'" step="1" value="'+cur+'">'
+      +'<div class="sval">1人 <span id="intPerVal">'+cur+'</span> 本ずつ</div>'
+      +'</div>';
+    var sl=$('intSlider');
+    sl.oninput=function(){ if(dead)return; var v=parseInt(sl.value);
+      if(bundleStage==='tens') tensPer=v; else onesPer=v;
+      $('intPerVal').textContent=v; renderBundles(); };
+    $('checkBeaker').textContent = bundleStage==='tens'? '十の位を 分けた！' : 'これで 分けた！';
+  }
   function makeBeaker(label, valL, scaleMax, isSrc, idx, isRem){
     var d=document.createElement('div'); d.className='beaker';
     var pct=Math.min(100, valL/scaleMax*100);
@@ -314,8 +450,27 @@
     } else { var cs=$('cupSlider'); if(cs) cs.oninput=function(){ if(dead)return; beakerVals[0]=parseInt(cs.value); refreshBeakers(); }; }
   }
 
+  function checkBundles(){
+    var b=current.b, fb=$('fb');
+    function shake(){ var box=$('wrap'); box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake'); }
+    if(bundleStage==='tens'){
+      var want=Math.floor(current.tens/b);
+      if(tensPer===want){ bundleStage='ones'; onesPer=0; fb.innerHTML='十の位OK！ あまったたばを ばらにくずすよ'; fb.style.color='#149a52'; renderBundles(); }
+      else { fb.innerHTML='たば'+current.tens+'本を '+b+'人に 同じだけ。1人 '+want+'本ずつだよ'; fb.style.color='#c23b3b'; shake(); }
+      return;
+    }
+    var onesTarget=current.ans%10;
+    var leftover=current.rem;
+    if(onesPer===onesTarget){
+      fb.innerHTML='ぴったり！ 1人 '+current.ans+'こ'+(current.hasRem? '、あまり '+leftover+'こ':'')+'！';
+      fb.style.color='#149a52'; $('checkBeaker').disabled=true; setTimeout(goCalc,900);
+    } else {
+      fb.innerHTML='ばらを '+b+'人に 同じだけ。1人 '+onesTarget+'本ずつだよ'+(current.hasRem? '（分けきれない分が あまり）':''); fb.style.color='#c23b3b'; shake();
+    }
+  }
   function checkBeaker(){
     if(dead)return; var ok=false, msg='';
+    if(current.mode===3){ checkBundles(); return; }
     if(current.mode===0){
       var allEqual=beakerVals.every(function(v){return v===beakerVals[0];});
       var used=beakerVals.reduce(function(a,b){return a+b;},0);
@@ -345,11 +500,16 @@
   // ===== 筆算 =====
   function goCalc(){
     phase='calc';
+    if(current.mode===3 && current.variant==='A') step4=null;
     $('beakerPhase').classList.add('hidden'); $('calcPhase').classList.remove('hidden'); $('checkPhase').classList.add('hidden');
     $('phaseTag').textContent='② ひっ算'; $('phaseTag').className='phase-tag tag-calc';
     $('fb').innerHTML=''; $('hintbox').classList.add('hidden');
     startQTimer(TIME_LIMIT);
     if(current.mode===0){ calcState={ld:longDivision(current.a10,current.b),stepIdx:0}; renderLong(); }
+    else if(current.mode===3){
+      if(current.variant==='A'){ render4Step(); }
+      else { calcState={ld:longDivision(current.a,current.b),stepIdx:0}; renderLong(); }
+    }
     else { buildTenfold(); }
   }
 
@@ -372,8 +532,10 @@
     for(var s=0;s<calcState.stepIdx;s++){
       var st=ld.steps[s];
       var isLast=(s===ld.steps.length-1);
+      var remTxt = current.mode===3 ? ('（のこり <span class="remhi">'+st.rem+'</span> が あまり！）')
+                                    : ('（のこり <span class="remhi">'+(st.rem/10).toFixed(1)+'L</span> が あまり！元のビーカーと同じ）');
       var tail = !isLast ? '（つぎに '+ld.steps[s+1].bring+' を下ろす）'
-               : (st.rem===0 ? '（わりきれた！）' : '（のこり <span class="remhi">'+(st.rem/10).toFixed(1)+'L</span> が あまり！元のビーカーと同じ）');
+               : (st.rem===0 ? '（わりきれた！）' : remTxt);
       steps+='<div class="stepline"><span class="sn">'+(s+1)+'</span><span class="se">'+st.cur+' ÷ '+b+' → 商 <b>'+st.qd+'</b>、'+st.qd+'×'+b+'='+st.sub+'、'+st.cur+'−'+st.sub+'='+st.rem+tail+'</span></div>';
     }
     $('calcBox').innerHTML='<div class="ld">'+qrow+drow+'</div>'+(steps?'<div class="steplist">'+steps+'</div>':'');
@@ -394,6 +556,112 @@
       [].forEach.call($('choices').children,function(c){if(parseInt(c.textContent)===correct)c.classList.add('right');});
       setTimeout(function(){ calcState.stepIdx++; if(calcState.stepIdx>=calcState.ld.qd.length){ goCheck(); } else { renderLong(); } },750);
     }
+  }
+
+  var step4=null;
+  function render4Step(){
+    if(!step4){
+      var hm=hissanModel(current.a, current.b);
+      step4={hm:hm, pos:0, sub:'tate', q:[], shownProd:[], shownRemDigits:[]};
+      for(var i=0;i<hm.qd.length;i++){ step4.shownProd.push(false); step4.shownRemDigits.push(0); }
+    }
+    drawHissan(); drawStepButtons(); drawStepInstr();
+  }
+
+  function cellRowHTML(text, endCol, N, extraClass){
+    var cells=[]; for(var c=0;c<N;c++) cells[c]='<span class="hc"></span>';
+    var startCol=endCol-(text.length-1);
+    for(var k=0;k<text.length;k++){ var col=startCol+k; if(col>=0&&col<N) cells[col]='<span class="hc">'+text.charAt(k)+'</span>'; }
+    return '<div class="hr '+(extraClass||'')+'"><span class="lead"></span>'+cells.join('')+'</div>';
+  }
+
+  function drawHissan(){
+    var hm=step4.hm, N=hm.N, b=current.b;
+    var qcells=[]; for(var c=0;c<N;c++){
+      if(c<step4.q.length) qcells[c]='<span class="hc">'+step4.q[c]+'</span>';
+      else if(c===step4.pos && step4.sub==='tate') qcells[c]='<span class="hc"><span class="qblank active">?</span></span>';
+      else qcells[c]='<span class="hc"><span class="qblank">_</span></span>';
+    }
+    var html='<div class="h4">';
+    html+='<div class="hr qrow"><span class="lead"></span>'+qcells.join('')+'</div>';
+    var dcells=[];
+    String(current.a).split('').forEach(function(ch,c){ dcells[c]='<span class="hc">'+ch+'</span>'; });
+    html+='<div class="hr"><span class="lead">'+b+')</span>'+dcells.join('')+'</div>';
+    hm.rows.forEach(function(row){
+      var visible=false, text=row.val, cls='', ecol=row.endCol;
+      if(row.kind==='product'){ visible=step4.shownProd[row.pos]; cls='barline'; }
+      else {
+        var stg=step4.shownRemDigits[row.pos];
+        if(stg===0){ visible=false; }
+        else if(stg===1){ visible=true; var st=hm.ld.steps[row.pos]; text=String(st.rem); ecol=row.pos; }
+        else { visible=true; text=row.val; }
+      }
+      if(!visible) return;
+      html+=cellRowHTML(text, ecol, N, cls);
+    });
+    html+='</div>';
+    $('calcBox').innerHTML=html;
+  }
+
+  function drawStepInstr(){
+    var hm=step4.hm, b=current.b, pos=step4.pos;
+    var st=hm.ld.steps[pos];
+    var names={tate:'たてる', kake:'かける', hiku:'ひく', oroshi:'おろす'};
+    var detail={
+      tate:'いま '+st.cur+' ÷ '+b+' の 商は？',
+      kake:'商 '+step4.q[pos]+' × '+b+' を 書こう（ボタン）',
+      hiku:st.cur+' − '+(st.qd*b)+' を しよう（ボタン）',
+      oroshi:'つぎの '+(hm.digits[pos+1])+' を おろそう（ボタン）'
+    };
+    $('instr').innerHTML='<b>'+names[step4.sub]+'</b>：'+detail[step4.sub];
+  }
+
+  function drawStepButtons(){
+    var hm=step4.hm;
+    var last=(step4.pos===hm.qd.length-1);
+    var order=last? ['tate','kake','hiku'] : ['tate','kake','hiku','oroshi'];
+    var ch=$('choices'); ch.innerHTML='';
+    if(step4.sub==='tate'){
+      var correct=hm.qd[step4.pos];
+      makeDigitChoices(correct).forEach(function(v){
+        var bb=document.createElement('button'); bb.className='choice'; bb.textContent=v;
+        bb.onclick=function(){ pick4Tate(v,bb,correct); }; ch.appendChild(bb);
+      });
+    }
+    var wrapB=document.createElement('div'); wrapB.className='step4btns';
+    var labels={tate:'たてる',kake:'かける',hiku:'ひく',oroshi:'おろす'};
+    order.forEach(function(s){
+      var bb=document.createElement('button'); bb.textContent=labels[s];
+      var doneOrder=order.indexOf(s)<order.indexOf(step4.sub);
+      if(doneOrder) bb.classList.add('done');
+      if(s===step4.sub && s!=='tate') bb.classList.add('on');
+      if(s==='tate') bb.disabled=true;
+      bb.onclick=function(){ press4Step(s); };
+      wrapB.appendChild(bb);
+    });
+    $('calcBox').appendChild(wrapB);
+  }
+
+  function pick4Tate(v,btn,correct){
+    if(dead)return;
+    if(v===correct){ btn.classList.add('right'); step4.q[step4.pos]=correct; step4.sub='kake'; $('fb').innerHTML='商 '+correct+' を たてた！'; $('fb').style.color='#149a52'; render4Step(); }
+    else { btn.classList.add('wrong'); missedThisQ=true; $('fb').innerHTML='この位の 商は '+correct+' だよ'; $('fb').style.color='#c23b3b';
+      var box=$('wrap'); box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake');
+      step4.q[step4.pos]=correct; setTimeout(function(){ step4.sub='kake'; render4Step(); },700); }
+  }
+
+  function press4Step(s){
+    if(dead)return;
+    if(s!==step4.sub){ $('fb').innerHTML='つぎは「'+({tate:'たてる',kake:'かける',hiku:'ひく',oroshi:'おろす'})[step4.sub]+'」だよ'; $('fb').style.color='#c23b3b';
+      var box=$('wrap'); box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake'); return; }
+    var hm=step4.hm, pos=step4.pos, last=(pos===hm.qd.length-1);
+    if(s==='kake'){ step4.shownProd[pos]=true; step4.sub='hiku'; render4Step(); return; }
+    if(s==='hiku'){ step4.shownRemDigits[pos]=1;
+      if(last){ setTimeout(goCheck,700);
+        $('fb').innerHTML=(hm.finalRem===0?'わりきれた！':'あまり '+hm.finalRem+'！'); $('fb').style.color='#149a52';
+      } else { step4.sub='oroshi'; }
+      render4Step(); return; }
+    if(s==='oroshi'){ step4.shownRemDigits[pos]=2; step4.pos++; step4.sub='tate'; render4Step(); return; }
   }
 
   function buildTenfold(){
@@ -426,8 +694,13 @@
     }
     var correct=a; // もとの数に戻る
     var set={}; set[correct]=1; var arr=[correct];
-    var deltas=[0.1,-0.1,0.2,-0.2,1,-1,b*0.1,-b*0.1];
-    while(arr.length<4){ var w=Math.round((correct+pick(deltas))*10)/10; if(w>0&&!set[w]){set[w]=1;arr.push(w);} }
+    if(current.mode===3){
+      var ideltas=[1,-1,2,-2,b,-b,10,-10];
+      while(arr.length<4){ var iw=correct+pick(ideltas); if(iw>0&&!set[iw]){set[iw]=1;arr.push(iw);} }
+    } else {
+      var deltas=[0.1,-0.1,0.2,-0.2,1,-1,b*0.1,-b*0.1];
+      while(arr.length<4){ var w=Math.round((correct+pick(deltas))*10)/10; if(w>0&&!set[w]){set[w]=1;arr.push(w);} }
+    }
     arr.sort(function(x,y){return x-y;});
     var ch=$('checkChoices'); ch.innerHTML='';
     arr.forEach(function(v){ var bb=document.createElement('button'); bb.className='choice'; bb.textContent=v; bb.onclick=function(){pickCheck(v,bb,correct);}; ch.appendChild(bb); });
@@ -454,7 +727,9 @@
   function nextQuestion(){ qIndex++; $('progressbar').style.width=(qIndex/TOTAL_Q*100)+'%'; if(qIndex>=TOTAL_Q){ endGame(false); return; } loadQuestion(); }
 
   function startQTimer(limit){
-    clearInterval(qTimer); qTimeLeft=limit; var danger=Math.max(5,limit/3);
+    clearInterval(qTimer);
+    if(!timed){ $('timePill').classList.add('hidden'); return; }
+    qTimeLeft=limit; var danger=Math.max(5,limit/3);
     $('timeN').textContent=qTimeLeft.toFixed(1); $('timePill').classList.remove('danger');
     qTimer=setInterval(function(){ qTimeLeft-=0.1; if(qTimeLeft<=danger)$('timePill').classList.add('danger');
       if(qTimeLeft<=0){ qTimeLeft=0; $('timeN').textContent='0.0'; explode(); return; } $('timeN').textContent=qTimeLeft.toFixed(1); },100);
@@ -489,21 +764,24 @@
   // 同じ問題を最初（ビーカー）からやり直し
   function reloadSameQuestion(){
     phase='beaker'; missedThisQ=false;
+    step4=null; bundleStage='tens'; tensPer=0; onesPer=0;
     $('phaseTag').textContent='① ビーカーで分ける'; $('phaseTag').className='phase-tag tag-beaker';
     $('remBadge').classList.toggle('hidden', !current.hasRem);
     $('story').textContent=current.story; $('problem').textContent=current.prob+' = ?';
     $('instr').textContent=current.beakerInstr;
     $('beakerPhase').classList.remove('hidden'); $('calcPhase').classList.add('hidden'); $('checkPhase').classList.add('hidden');
-    $('checkBeaker').disabled=false; $('nextBtn').classList.add('hidden');
+    $('checkBeaker').disabled=false; $('checkBeaker').textContent='これで分けた！'; $('nextBtn').classList.add('hidden');
     $('fb').innerHTML='やりなおし！ もういちど 分けてみよう'; $('fb').style.color='#c23b3b';
     $('hintbox').classList.add('hidden'); $('hintbox').innerHTML=current.hint;
     buildBeakers(); startQTimer(TIME_LIMIT);
   }
 
   function loadQuestion(){
-    var plan = (mode===0 && qPlan[qIndex]) ? qPlan[qIndex] : {b:null, rem:false};
-    current=gen(mode, mode===0 ? plan.rem : false, mode===0 ? plan.b : null);
+    var usePlan = (mode===0 || mode===3);
+    var plan = (usePlan && qPlan[qIndex]) ? qPlan[qIndex] : {b:null, rem:false};
+    current=gen(mode, usePlan ? plan.rem : false, usePlan ? plan.b : null);
     phase='beaker'; missedThisQ=false;
+    step4=null; bundleStage='tens'; tensPer=0; onesPer=0;
     $('qN').textContent=qIndex+1; $('stageName').textContent=STAGE_NAMES[mode];
     $('phaseTag').textContent='① ビーカーで分ける'; $('phaseTag').className='phase-tag tag-beaker';
     $('remBadge').classList.toggle('hidden', !current.hasRem);
@@ -511,7 +789,7 @@
     $('problem').classList.remove('pop'); void $('problem').offsetWidth; $('problem').classList.add('pop');
     $('instr').textContent=current.beakerInstr;
     $('beakerPhase').classList.remove('hidden'); $('calcPhase').classList.add('hidden'); $('checkPhase').classList.add('hidden');
-    $('checkBeaker').disabled=false; $('nextBtn').classList.add('hidden');
+    $('checkBeaker').disabled=false; $('checkBeaker').textContent='これで分けた！'; $('nextBtn').classList.add('hidden');
     $('fb').innerHTML=''; $('hintbox').classList.add('hidden'); $('hintbox').innerHTML=current.hint;
     buildBeakers(); startQTimer(TIME_LIMIT);
   }
@@ -519,6 +797,15 @@
   // 難易度プランを作る：やさしい→難しいの流れ＋少しランダムに揺らす
   function buildPlan(){
     qPlan=[];
+    if(mode===3){
+      var bases=[2,3,2,4,3,5,6,4,7,8];
+      for(var k=0;k<bases.length-1;k++){ if(Math.random()<0.3){ var t=bases[k]; bases[k]=bases[k+1]; bases[k+1]=t; } }
+      var rpool=[]; for(var j=4;j<TOTAL_Q;j++) rpool.push(j);
+      rpool.sort(function(){return Math.random()-0.5;});
+      var rset={}; rpool.slice(0,REM_COUNT).forEach(function(idx){ rset[idx]=true; });
+      for(var q=0;q<TOTAL_Q;q++) qPlan.push({b:bases[q], rem:!!rset[q]});
+      return;
+    }
     if(mode!==0){ for(var i=0;i<TOTAL_Q;i++) qPlan.push({b:null,rem:false}); return; }
     // 割る数の難易度: 序盤は2,3中心 → 後半は4,5中心。各問に割る数を割り当て
     // ベースの並び（やさしい順）
@@ -532,9 +819,11 @@
     for(var q=0;q<TOTAL_Q;q++){ qPlan.push({b:base[q], rem:!!remSet[q]}); }
   }
 
-  function startGame(m){
-    mode=m; qIndex=0; combo=0; maxCombo=0; rightCount=0; dead=false;
+  function startGame(m, variantSel, timedSel){
+    mode=m; variant=variantSel||'A'; timed=(timedSel===undefined)? true : !!timedSel;
+    qIndex=0; combo=0; maxCombo=0; rightCount=0; dead=false;
     $('comboN').textContent=0; $('progressbar').style.width='0%';
+    $('timePill').classList.toggle('hidden', !timed);
     buildPlan();
     show('game'); loadQuestion(); startTime=Date.now();
   }
@@ -550,11 +839,60 @@
     show('result');
   }
 
-  [].forEach.call(document.querySelectorAll('.stage-btn'),function(b){ b.onclick=function(){ startGame(parseInt(b.dataset.mode)); }; });
+  [].forEach.call(document.querySelectorAll('.stage-btn'),function(b){
+    if(b.id==='intStageBtn') return;
+    b.onclick=function(){ startGame(parseInt(b.dataset.mode), 'B', true); };
+  });
+  $('intStageBtn').onclick=function(){ $('intMenu').classList.toggle('hidden'); };
+  [].forEach.call(document.querySelectorAll('#intMenu button'),function(b){
+    b.onclick=function(){ startGame(3, b.dataset.variant, b.dataset.timed==='1'); };
+  });
   $('checkBeaker').onclick=checkBeaker; $('nextBtn').onclick=nextQuestion;
   $('hintbtn').onclick=function(){ $('hintbox').classList.toggle('hidden'); };
-  $('retry').onclick=function(){ startGame(mode); };
-  $('tohome').onclick=function(){ clearInterval(qTimer); show('home'); };
+  $('retry').onclick=function(){ startGame(mode, variant, timed); };
+  $('tohome').onclick=function(){ clearInterval(qTimer); $('intMenu').classList.add('hidden'); show('home'); };
+
+  function runSelfTests(){
+    var fails=0;
+    function ok(cond,msg){ if(!cond){ fails++; console.error('FAIL:',msg); } else { console.log('ok:',msg); } }
+    window.__divTests={ok:ok, get fails(){return fails;}};
+    console.log('=== self tests ===');
+    // --- INT_POOL: 商は必ず2ケタ・わられる数は2ケタ ---
+    ok(typeof INT_POOL!=='undefined' && INT_POOL.length>0, 'INT_POOL exists & non-empty');
+    INT_POOL.forEach(function(P){
+      ok(P.a>=10 && P.a<=99, 'a is 2-digit: '+P.a);
+      ok(P.ans>=10 && P.ans<=99, 'quotient 2-digit: '+P.a+'/'+P.b+'='+P.ans);
+      ok(P.a===P.b*P.ans, 'exact divide: '+P.a+'='+P.b+'*'+P.ans);
+      ok(P.b>=2 && P.b<=9, 'divisor 2..9: '+P.b);
+    });
+    INT_POOL_R.forEach(function(P){
+      ok(P.a===P.b*P.ans+P.rem, 'rem exact: '+P.a+'='+P.b+'*'+P.ans+'+'+P.rem);
+      ok(P.rem>0 && P.rem<P.b, 'rem in range: '+P.rem+'<'+P.b);
+      ok(P.ans>=10 && P.ans<=99 && P.a<=99, 'rem case ranges: '+P.a);
+    });
+    // --- genInt ---
+    var g=genInt(false,'A',3);
+    ok(g.mode===3 && g.b===3 && g.hasRem===false, 'genInt no-rem mode3 b=3');
+    ok(g.tens*10+g.ones===g.a, 'tens/ones decompose a');
+    var gr=genInt(true,'A',null);
+    ok(gr.hasRem===true && gr.rem>0, 'genInt rem case');
+    // --- hissanModel ---
+    var hm=hissanModel(48,3);
+    ok(hm.qd.join('')==='16', 'hm 48/3 quotient 16');
+    ok(hm.finalRem===0, 'hm 48/3 rem 0');
+    ok(hm.rows.length===4, 'hm rows=4');
+    ok(hm.rows[0].kind==='product' && hm.rows[0].val==='3' && hm.rows[0].endCol===0, 'p0 = 3 @col0');
+    ok(hm.rows[1].kind==='remainder' && hm.rows[1].val==='18' && hm.rows[1].endCol===1, 'rem0 brings -> 18 @col1');
+    ok(hm.rows[2].val==='18' && hm.rows[2].endCol===1, 'p1 = 18 @col1');
+    ok(hm.rows[3].val==='0' && hm.rows[3].endCol===1, 'rem1 = 0 @col1');
+    var hm2=hissanModel(62,2);
+    ok(hm2.rows[1].val==='2', '62/2 no leading zero in brought value: '+hm2.rows[1].val);
+    var hm3=hissanModel(53,4);
+    ok(hm3.qd.join('')==='13' && hm3.finalRem===1, 'hm 53/4 = 13 r1');
+    ok(hm3.rows[hm3.rows.length-1].val==='1', '53/4 final remainder shows 1');
+    console.log('=== done, fails =', fails, '===');
+  }
+  if(location.hash==='#test') runSelfTests();
 })();
 </script>
 </body>
