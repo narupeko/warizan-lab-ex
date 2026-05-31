@@ -492,6 +492,10 @@
     $('fb').innerHTML=''; $('hintbox').classList.add('hidden');
     startQTimer(TIME_LIMIT);
     if(current.mode===0){ calcState={ld:longDivision(current.a10,current.b),stepIdx:0}; renderLong(); }
+    else if(current.mode===3){
+      if(current.variant==='A'){ render4Step(); }
+      else { calcState={ld:longDivision(current.a,current.b),stepIdx:0}; renderLong(); }
+    }
     else { buildTenfold(); }
   }
 
@@ -514,8 +518,10 @@
     for(var s=0;s<calcState.stepIdx;s++){
       var st=ld.steps[s];
       var isLast=(s===ld.steps.length-1);
+      var remTxt = current.mode===3 ? ('（のこり <span class="remhi">'+st.rem+'</span> が あまり！）')
+                                    : ('（のこり <span class="remhi">'+(st.rem/10).toFixed(1)+'L</span> が あまり！元のビーカーと同じ）');
       var tail = !isLast ? '（つぎに '+ld.steps[s+1].bring+' を下ろす）'
-               : (st.rem===0 ? '（わりきれた！）' : '（のこり <span class="remhi">'+(st.rem/10).toFixed(1)+'L</span> が あまり！元のビーカーと同じ）');
+               : (st.rem===0 ? '（わりきれた！）' : remTxt);
       steps+='<div class="stepline"><span class="sn">'+(s+1)+'</span><span class="se">'+st.cur+' ÷ '+b+' → 商 <b>'+st.qd+'</b>、'+st.qd+'×'+b+'='+st.sub+'、'+st.cur+'−'+st.sub+'='+st.rem+tail+'</span></div>';
     }
     $('calcBox').innerHTML='<div class="ld">'+qrow+drow+'</div>'+(steps?'<div class="steplist">'+steps+'</div>':'');
@@ -596,7 +602,9 @@
   function nextQuestion(){ qIndex++; $('progressbar').style.width=(qIndex/TOTAL_Q*100)+'%'; if(qIndex>=TOTAL_Q){ endGame(false); return; } loadQuestion(); }
 
   function startQTimer(limit){
-    clearInterval(qTimer); qTimeLeft=limit; var danger=Math.max(5,limit/3);
+    clearInterval(qTimer);
+    if(!timed){ $('timePill').classList.add('hidden'); return; }
+    qTimeLeft=limit; var danger=Math.max(5,limit/3);
     $('timeN').textContent=qTimeLeft.toFixed(1); $('timePill').classList.remove('danger');
     qTimer=setInterval(function(){ qTimeLeft-=0.1; if(qTimeLeft<=danger)$('timePill').classList.add('danger');
       if(qTimeLeft<=0){ qTimeLeft=0; $('timeN').textContent='0.0'; explode(); return; } $('timeN').textContent=qTimeLeft.toFixed(1); },100);
