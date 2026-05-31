@@ -88,6 +88,11 @@
   .stepbtn{width:46px; height:46px; border:3px solid var(--ink); border-radius:14px; background:#fff; font-family:'Mochiy Pop One',sans-serif; font-size:26px; color:var(--ink); cursor:pointer; box-shadow:0 4px 0 var(--ink); line-height:1; display:flex; align-items:center; justify-content:center; flex:none;}
   .stepbtn:active{transform:translateY(2px); box-shadow:0 2px 0 var(--ink);}
   .stepbtn:disabled{opacity:.35; box-shadow:0 4px 0 #aaa; cursor:not-allowed;}
+  .vstepper{display:flex; gap:5px; justify-content:center; margin-top:5px;}
+  .ministep{width:30px; height:30px; border:3px solid var(--ink); border-radius:9px; background:#fff; font-family:'Mochiy Pop One',sans-serif; font-size:18px; color:var(--ink); cursor:pointer; box-shadow:0 3px 0 var(--ink); line-height:1; display:flex; align-items:center; justify-content:center; flex:none; padding:0;}
+  .ministep:active{transform:translateY(2px); box-shadow:0 1px 0 var(--ink);}
+  .bcount{font-size:13px; font-weight:800; color:#077; white-space:nowrap;}
+  .bcount .rc{font-size:24px; color:var(--juice2); margin:0 2px; vertical-align:-3px;}
   .beaker-area{display:flex; justify-content:center; align-items:flex-end; gap:12px; margin-bottom:8px;}
   .beaker{position:relative; width:54px; height:140px;}
   .glass{position:absolute; inset:0; border:3px solid var(--ink); border-top:none; border-radius:6px 6px 16px 16px; background:rgba(255,255,255,.5); overflow:hidden;}
@@ -393,7 +398,7 @@
       for(var j=0;j<current.b;j++){
         area.appendChild(makeBeaker('', 0, scaleMax, false, j, false));
         var col=document.createElement('div'); col.className='slider-row';
-        col.innerHTML='<div class="who">'+(j+1)+'人目</div><input type="range" class="vslider" data-i="'+j+'" min="0" max="'+maxPer+'" step="1" value="0"><div class="sval" id="sval'+j+'">0.0L</div>';
+        col.innerHTML='<div class="who">'+(j+1)+'人目</div><input type="range" class="vslider" data-i="'+j+'" min="0" max="'+maxPer+'" step="1" value="0"><div class="sval" id="sval'+j+'">0.0L</div><div class="vstepper"><button type="button" class="ministep vminus" data-i="'+j+'">−</button><button type="button" class="ministep vplus" data-i="'+j+'">＋</button></div>';
         ctrl.appendChild(col);
       }
     } else {
@@ -403,7 +408,10 @@
       area.appendChild(makeBeaker('コップ', 0, Math.max(current.b,0.5), false, 0, false));
       var stepL=Math.round(current.b*10), maxCups=Math.round(current.a*10);
       var fcol=document.createElement('div'); fcol.className='slider-row'; fcol.style.width='auto';
-      fcol.innerHTML='<div class="who">'+current.b+'Lずつ →</div><input type="range" class="hslider" id="cupSlider" min="0" max="'+maxCups+'" step="'+stepL+'" value="0"><div style="font-weight:800;font-size:13px;text-align:center;margin-top:4px;">コップ <span id="cupCount" style="color:var(--juice2);font-size:22px;">0</span> コ</div>';
+      fcol.innerHTML='<div class="who">'+current.b+'Lずつ →</div><input type="range" class="hslider" id="cupSlider" min="0" max="'+maxCups+'" step="'+stepL+'" value="0">'
+        +'<div class="stepper"><button type="button" class="stepbtn" id="cupMinus">−</button>'
+        +'<div style="font-weight:800;font-size:13px;text-align:center;">コップ <span id="cupCount" style="color:var(--juice2);font-size:26px;">0</span> コ</div>'
+        +'<button type="button" class="stepbtn" id="cupPlus">＋</button></div>';
       ctrl.appendChild(fcol);
     }
     bindPour(); refreshBeakers();
@@ -428,9 +436,12 @@
     }
     var srcTabs = bundleStage==='tens'? tensLeft : 0;
     var srcBaras = bundleStage==='tens'? ones : onesLeft;
+    var remLabel = bundleStage==='tens'
+      ? 'たば<span class="rc">'+srcTabs+'</span>本'+(ones>0?' ＆ ばら'+ones+'本':'')
+      : 'ばら<span class="rc">'+srcBaras+'</span>本';
     area.innerHTML=
       '<div class="bundles">'
-      +'<div class="brow"><span class="blab">のこり→</span><div class="bgroup">'+tabs(srcTabs)+baras(srcBaras)+'</div></div>'
+      +'<div class="brow"><span class="blab">のこり→</span><div class="bgroup">'+tabs(srcTabs)+baras(srcBaras)+'</div><span class="bcount">'+remLabel+'</span></div>'
       +'<div class="brow" style="gap:12px">'+people+'</div>'
       +'</div>';
     var label = bundleStage==='tens'
@@ -497,13 +508,27 @@
 
   function bindPour(){
     if(current.mode===0){
+      var stepPour=function(i,delta){
+        var others=0; beakerVals.forEach(function(v,k){ if(k!==i) others+=v; });
+        var maxAllow=current.a10-others, want=Math.max(0,Math.min(maxAllow, beakerVals[i]+delta));
+        beakerVals[i]=want; var sl=document.querySelector('.vslider[data-i="'+i+'"]'); if(sl) sl.value=want; refreshBeakers();
+      };
       document.querySelectorAll('.vslider[data-i]').forEach(function(sl){
         sl.oninput=function(){ if(dead)return; var i=parseInt(sl.dataset.i), want=parseInt(sl.value);
           var others=0; beakerVals.forEach(function(v,k){ if(k!==i) others+=v; });
           var maxAllow=current.a10-others; if(want>maxAllow){ want=maxAllow; sl.value=want; }
           beakerVals[i]=want; refreshBeakers(); };
       });
-    } else { var cs=$('cupSlider'); if(cs) cs.oninput=function(){ if(dead)return; beakerVals[0]=parseInt(cs.value); refreshBeakers(); }; }
+      document.querySelectorAll('.vminus').forEach(function(btn){ btn.onclick=function(){ if(dead)return; stepPour(parseInt(btn.dataset.i),-1); }; });
+      document.querySelectorAll('.vplus').forEach(function(btn){ btn.onclick=function(){ if(dead)return; stepPour(parseInt(btn.dataset.i),1); }; });
+    } else {
+      var cs=$('cupSlider'), stepL=Math.round(current.b*10), maxCups=Math.round(current.a*10);
+      var stepCup=function(delta){ beakerVals[0]=Math.max(0,Math.min(maxCups, beakerVals[0]+delta)); if(cs) cs.value=beakerVals[0]; refreshBeakers(); };
+      if(cs) cs.oninput=function(){ if(dead)return; beakerVals[0]=parseInt(cs.value); refreshBeakers(); };
+      var cm=$('cupMinus'), cp=$('cupPlus');
+      if(cm) cm.onclick=function(){ if(dead)return; stepCup(-stepL); };
+      if(cp) cp.onclick=function(){ if(dead)return; stepCup(stepL); };
+    }
   }
 
   function checkBundles(){
