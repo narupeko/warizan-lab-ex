@@ -79,10 +79,11 @@
   .brow .blab{font-size:12px; font-weight:800; color:#077; width:80px; text-align:right;}
   .tab{display:inline-block; width:10px; height:30px; background:linear-gradient(180deg,#ffd23f,#ff9a1f); border:2px solid var(--ink); border-radius:3px;}
   .bara{display:inline-block; width:10px; height:10px; background:#00d9c0; border:2px solid var(--ink); border-radius:50%;}
-  .bgroup{display:inline-flex; gap:3px; padding:3px 5px; border:2px dashed #bbb; border-radius:8px; min-height:20px;}
+  .bgroup{display:inline-flex; flex-wrap:wrap; gap:3px; padding:3px 5px; border:2px dashed #bbb; border-radius:8px; min-height:20px; max-width:130px; justify-content:center;}
   .bperson{display:inline-flex; flex-direction:column; align-items:center; gap:2px; font-size:11px; font-weight:800; color:#555;}
   .intslider-row{display:flex; flex-direction:column; align-items:center; gap:4px; margin-top:8px;}
   .intslider-row .sval{font-size:14px; font-weight:800; color:var(--juice2);}
+  .intslider-row .bigper{display:inline-block; min-width:30px; font-size:30px; color:var(--juice2); vertical-align:-6px; margin:0 2px;}
   .beaker-area{display:flex; justify-content:center; align-items:flex-end; gap:12px; margin-bottom:8px;}
   .beaker{position:relative; width:54px; height:140px;}
   .glass{position:absolute; inset:0; border:3px solid var(--ink); border-top:none; border-radius:6px 6px 16px 16px; background:rgba(255,255,255,.5); overflow:hidden;}
@@ -121,6 +122,7 @@
   .lcell.subline{border-top:3px solid var(--ink);}
   .lcell.filledcell{color:#149a52;}
   .lcell.remval{color:var(--rem); font-weight:800;} .lcell.okval{color:#149a52; font-weight:800;}
+  .hissan-mini{transform:scale(.78); transform-origin:top center; margin-bottom:-14px;}
   .blankcell{display:inline-block; width:28px; height:32px; line-height:28px; text-align:center; border:3px dashed var(--orange); border-radius:8px; color:#c98a3a; background:#fff7e6;}
   .blankcell.active{background:var(--yellow); animation:blink 1s infinite;}
   @keyframes blink{0%,100%{box-shadow:0 0 0 0 rgba(255,210,63,.6);}50%{box-shadow:0 0 0 5px rgba(255,210,63,0);}}
@@ -430,13 +432,13 @@
     var label = bundleStage==='tens'
       ? '十の位：たば'+tens+'本を '+b+'人に 同じだけ（1人 何本ずつ？）'
       : 'あまったたば'+(tens-tensPer*b)+'本→ばら'+((tens-tensPer*b)*10)+'本に！ ばら'+onesPool+'本を '+b+'人に';
-    var maxPer = bundleStage==='tens'? Math.floor(tens/b) : Math.floor(onesPool/b);
+    var maxPer = bundleStage==='tens'? tens : onesPool;   // 答えではなく「全部の数」まで → 自分で考える
     var cur = bundleStage==='tens'? tensPer : onesPer;
     ctrl.innerHTML=
       '<div class="intslider-row" style="width:100%">'
       +'<div style="font-size:12px;font-weight:800;color:#077;text-align:center">'+label+'</div>'
       +'<input type="range" class="hslider" id="intSlider" min="0" max="'+Math.max(maxPer,0)+'" step="1" value="'+cur+'">'
-      +'<div class="sval">1人 <span id="intPerVal">'+cur+'</span> 本ずつ</div>'
+      +'<div class="sval">1人 <span class="bigper" id="intPerVal">'+cur+'</span> 本ずつ</div>'
       +'</div>';
     var sl=$('intSlider');
     sl.oninput=function(){ if(dead)return; var v=parseInt(sl.value);
@@ -502,7 +504,8 @@
     if(bundleStage==='tens'){
       var want=Math.floor(current.tens/b);
       if(tensPer===want){ bundleStage='ones'; onesPer=0; fb.innerHTML='十の位OK！ あまったたばを ばらにくずすよ'; fb.style.color='#149a52'; renderBundles(); }
-      else { fb.innerHTML='たば'+current.tens+'本を '+b+'人に 同じだけ。1人 '+want+'本ずつだよ'; fb.style.color='#c23b3b'; shake(); }
+      else if(tensPer>want){ fb.innerHTML='たばが たりないよ！ 1人ぶんを へらそう'; fb.style.color='#c23b3b'; shake(); }
+      else { fb.innerHTML='まだ おなじだけ 分けられるよ！ ふやそう'; fb.style.color='#c23b3b'; shake(); }
       return;
     }
     var onesTarget=current.ans%10;
@@ -510,9 +513,8 @@
     if(onesPer===onesTarget){
       fb.innerHTML='ぴったり！ 1人 '+current.ans+'こ'+(current.hasRem? '、あまり '+leftover+'こ':'')+'！';
       fb.style.color='#149a52'; $('checkBeaker').disabled=true; setTimeout(goCalc,900);
-    } else {
-      fb.innerHTML='ばらを '+b+'人に 同じだけ。1人 '+onesTarget+'本ずつだよ'+(current.hasRem? '（分けきれない分が あまり）':''); fb.style.color='#c23b3b'; shake();
-    }
+    } else if(onesPer>onesTarget){ fb.innerHTML='ばらが たりないよ！ 1人ぶんを へらそう'+(current.hasRem? '（ぜんぶは 分けきれないよ）':''); fb.style.color='#c23b3b'; shake();
+    } else { fb.innerHTML='まだ 分けられるよ！ ふやそう'; fb.style.color='#c23b3b'; shake(); }
   }
   function checkBeaker(){
     if(dead)return; var ok=false, msg='';
@@ -589,23 +591,19 @@
     $('instr').innerHTML='いまの計算：<b>'+cur.cur+' ÷ '+b+'</b> の 商は？';
   }
   // 整数(2ケタ÷1ケタ)用：数字えらびのまま、ひき算と「下ろした数」を筆算の下に自動表示
-  function renderLongInt(){
-    var ld=calcState.ld, b=current.b, aStr=String(current.a), N=aStr.length, si=calcState.stepIdx;
-    var done=(si>=ld.qd.length);
-    var leadEmpty='<div class="lcell lead"></div>';
+  // 整数筆算のグリッドHTMLを返す（si=描いた位の数、done=完成形であまり強調）。②と③で共用
+  function intHissanHTML(ld, aStr, b, si, done){
+    var N=aStr.length, leadEmpty='<div class="lcell lead"></div>';
     var leadDiv='<div class="lcell lead"><span class="divisor">'+b+'</span><span class="bracket">)</span></div>';
     var html='';
-    // 商の行
     html+=leadEmpty;
     for(var c=0;c<N;c++){
       if(c<si) html+='<div class="lcell filledcell">'+ld.qd[c]+'</div>';
       else if(c===si) html+='<div class="lcell"><span class="blankcell active">?</span></div>';
       else html+='<div class="lcell"><span class="blankcell">_</span></div>';
     }
-    // わる数）わられる数（屋根の線）
     html+=leadDiv;
     for(var d=0;d<N;d++) html+='<div class="lcell roof">'+aStr.charAt(d)+'</div>';
-    // 各位：ひく数 → ひき算の線つき結果（ひいた残り＋下ろした数）
     for(var s=0;s<si;s++){
       var st=ld.steps[s], isLast=(s===N-1), subS=String(st.sub), subStart=s-(subS.length-1);
       html+=leadEmpty;
@@ -618,13 +616,18 @@
       html+=leadEmpty;
       for(var c3=0;c3<N;c3++){
         var cls='lcell', t='';
-        if(c3>=lineFrom && c3<=rcol) cls+=' subline';                 // 線は ひく数〜下ろした桁（結果の幅）
+        if(c3>=lineFrom && c3<=rcol) cls+=' subline';
         if(c3>=rStart && c3<=rcol){ t=rtext.charAt(c3-rStart); if(hi) cls+=' '+hi; }
         html+='<div class="'+cls+'">'+t+'</div>';
       }
     }
     var colTmpl='44px'; for(var i=0;i<N;i++) colTmpl+=' 28px';
-    $('calcBox').innerHTML='<div class="ldg" style="grid-template-columns:'+colTmpl+';">'+html+'</div>';
+    return '<div class="ldg" style="grid-template-columns:'+colTmpl+';">'+html+'</div>';
+  }
+  function renderLongInt(){
+    var ld=calcState.ld, b=current.b, aStr=String(current.a), N=aStr.length, si=calcState.stepIdx;
+    var done=(si>=ld.qd.length);
+    $('calcBox').innerHTML=intHissanHTML(ld, aStr, b, si, done);
     var ch=$('choices'); ch.innerHTML='';
     if(done){
       // あまりまで見せて、答えあわせへ進むボタン
@@ -673,16 +676,23 @@
     $('calcPhase').classList.add('hidden'); $('checkPhase').classList.remove('hidden');
     $('phaseTag').textContent='③ たしかめ算'; $('phaseTag').className='phase-tag tag-check';
     $('fb').innerHTML=''; startQTimer(TIME_LIMIT);
-    // 元の数（被除数）を隠す：問題式とストーリーを伏せて、計算しないと分からないようにする
-    $('problem').textContent='？ ÷ '+current.b+' = '+current.ans+(current.hasRem?' あまり '+current.rem:'');
-    $('story').textContent='もとの 数（？）は いくつだったかな？';
-    var b=current.b, ans=current.ans, rem=current.rem||0, a=current.a;
-    if(current.hasRem){
-      $('instr').innerHTML='まず かけ算をして、あまりを たそう！';
-      $('checkVisual').innerHTML='<div class="mainmul"><span class="cf">'+ans+'</span> <span class="op">×</span> '+b+' <span class="op">＝</span> ?</div><div class="formula">そのあと ＋ あまり <span class="cr">'+rem+'</span> で もとの数？</div>';
+    var b=current.b, ans=current.ans, rem=current.rem||0, a=current.a, isInt=(current.mode===3);
+    if(isInt){
+      // 整数：②の筆算を見ながら確認（わられる数も見せる）
+      $('problem').textContent=a+' ÷ '+b+' = '+ans+(current.hasRem?' あまり '+rem:'');
+      $('story').textContent='②の 筆算を 見ながら たしかめよう！';
     } else {
-      $('instr').innerHTML='かけ算をして、もとの数に もどるか たしかめよう！';
-      $('checkVisual').innerHTML='<div class="formula">商 × わる数 ＝ もと？</div><div class="mainmul"><span class="cf">'+ans+'</span> <span class="op">×</span> '+b+' <span class="op">＝</span> ?</div>';
+      // 元の数（被除数）を隠す：計算しないと分からないように
+      $('problem').textContent='？ ÷ '+b+' = '+ans+(current.hasRem?' あまり '+rem:'');
+      $('story').textContent='もとの 数（？）は いくつだったかな？';
+    }
+    var hissan = isInt ? '<div class="hissan-mini">'+intHissanHTML(calcState.ld, String(a), b, String(a).length, true)+'</div>' : '';
+    if(current.hasRem){
+      $('instr').innerHTML=isInt? 'かけ算して あまりを たすと もとに もどる？' : 'まず かけ算をして、あまりを たそう！';
+      $('checkVisual').innerHTML=hissan+'<div class="mainmul"><span class="cf">'+ans+'</span> <span class="op">×</span> '+b+' <span class="op">＝</span> ?</div><div class="formula">そのあと ＋ あまり <span class="cr">'+rem+'</span> で もとの数？</div>';
+    } else {
+      $('instr').innerHTML=isInt? 'かけ算すると もとに もどる？' : 'かけ算をして、もとの数に もどるか たしかめよう！';
+      $('checkVisual').innerHTML=hissan+'<div class="formula">商 × わる数 ＝ もと？</div><div class="mainmul"><span class="cf">'+ans+'</span> <span class="op">×</span> '+b+' <span class="op">＝</span> ?</div>';
     }
     var correct=a; // もとの数に戻る
     var set={}; set[correct]=1; var arr=[correct];
@@ -757,7 +767,7 @@
   function reloadSameQuestion(){
     phase='beaker'; missedThisQ=false;
     bundleStage='tens'; tensPer=0; onesPer=0;
-    $('phaseTag').textContent='① ビーカーで分ける'; $('phaseTag').className='phase-tag tag-beaker';
+    $('phaseTag').textContent=(mode===3?'① たば＆ばらで分ける':'① ビーカーで分ける'); $('phaseTag').className='phase-tag tag-beaker';
     $('remBadge').classList.toggle('hidden', !current.hasRem);
     $('story').textContent=current.story; $('problem').textContent=current.prob+' = ?';
     $('instr').textContent=current.beakerInstr;
@@ -775,7 +785,7 @@
     phase='beaker'; missedThisQ=false;
     bundleStage='tens'; tensPer=0; onesPer=0;
     $('qN').textContent=qIndex+1; $('stageName').textContent=STAGE_NAMES[mode];
-    $('phaseTag').textContent='① ビーカーで分ける'; $('phaseTag').className='phase-tag tag-beaker';
+    $('phaseTag').textContent=(mode===3?'① たば＆ばらで分ける':'① ビーカーで分ける'); $('phaseTag').className='phase-tag tag-beaker';
     $('remBadge').classList.toggle('hidden', !current.hasRem);
     $('story').textContent=current.story; $('problem').textContent=current.prob+' = ?';
     $('problem').classList.remove('pop'); void $('problem').offsetWidth; $('problem').classList.add('pop');
