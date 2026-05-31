@@ -85,19 +85,6 @@
   input[type=range].hslider::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:26px; height:26px; background:var(--cyan); border:3px solid var(--ink); border-radius:8px; box-shadow:0 2px 0 var(--ink); margin-top:-9px;}
   input[type=range].hslider::-moz-range-thumb{ width:26px; height:26px; background:var(--cyan); border:3px solid var(--ink); border-radius:8px;}
   .calc-box{font-family:'Mochiy Pop One',sans-serif; display:flex; justify-content:center; margin:6px 0 10px;}
-  .h4{display:inline-block; font-family:'Mochiy Pop One',sans-serif;}
-  .h4 .hr{display:grid; grid-auto-flow:column; justify-content:start; column-gap:0; height:34px; align-items:center;}
-  .h4 .hc{width:30px; text-align:center; font-size:26px;}
-  .h4 .lead{width:34px; text-align:right; font-size:22px; padding-right:2px;}
-  .h4 .qrow .hc{color:#149a52;}
-  .h4 .qblank{display:inline-block; width:24px; height:30px; line-height:26px; border:3px dashed var(--orange); border-radius:8px; color:#c98a3a; background:#fff7e6;}
-  .h4 .qblank.active{background:var(--yellow); animation:blink 1s infinite;}
-  .h4 .barline{border-top:3px solid var(--ink);}
-  .step4btns{display:flex; justify-content:center; gap:6px; flex-wrap:wrap; margin:8px 0;}
-  .step4btns button{border:3px solid var(--ink); border-radius:12px; padding:8px 12px; font-family:inherit; font-weight:800; font-size:14px; background:#fff; color:var(--ink); box-shadow:0 4px 0 var(--ink); cursor:pointer;}
-  .step4btns button.on{background:var(--cyan); animation:blink 1s infinite;}
-  .step4btns button.done{background:#7CFFB2; border-color:#149a52; box-shadow:0 4px 0 #149a52;}
-  .step4btns button:disabled{opacity:.4; cursor:not-allowed;}
   .ld{display:inline-grid; row-gap:2px; font-size:24px;}
   .ld .r{display:flex; align-items:center; height:32px;}
   .cellnum{width:28px; text-align:center;}
@@ -154,8 +141,8 @@
     <div id="intMenu" class="hidden">
       <div class="mtitle">どっちで やる？</div>
       <div class="mbtns">
-        <button data-variant="A" data-timed="0">🌱 れんしゅう<small>タイマー無し・4ステップ筆算</small></button>
-        <button data-variant="B" data-timed="1">🔥 ちょうせん<small>タイマーあり・数字えらび</small></button>
+        <button data-variant="A" data-timed="0">🌱 れんしゅう<small>タイマー無し・ゆっくり筆算</small></button>
+        <button data-variant="B" data-timed="1">🔥 ちょうせん<small>タイマーあり・筆算</small></button>
       </div>
     </div>
     <button class="stage-btn s1" data-mode="0"><span class="emoji">🧪</span>小数 ÷ 整数 ラボ<small>分けると元が減る！残りが「あまり」だよ</small></button>
@@ -235,28 +222,6 @@
     var digits=String(a10).split('').map(Number); var steps=[], carry=0, qd=[];
     for(var i=0;i<digits.length;i++){ var cur=carry*10+digits[i]; var q=Math.floor(cur/b), sub=q*b, rem=cur-sub; qd.push(q); steps.push({bring:digits[i],cur:cur,qd:q,sub:sub,rem:rem}); carry=rem; }
     return {qd:qd, qfull:parseInt(qd.join(''),10), finalRem:carry, steps:steps};
-  }
-
-  // A型筆算の段組みモデル：各位の積／ひいた残り＋おろし を列位置つきで返す
-  function hissanModel(a,b){
-    var ld=longDivision(a,b);
-    var digits=String(a).split('').map(Number);
-    var rows=[];
-    ld.steps.forEach(function(st,i){
-      // 積（商d×b）：いま処理した桁 i に右そろえ
-      rows.push({kind:'product', pos:i, endCol:i, val:String(st.sub)});
-      var isLast=(i===ld.steps.length-1);
-      var val, endCol;
-      if(!isLast){
-        // ひいた残り st.rem に 次の桁を おろす。残り0なら先頭0は書かない
-        val=(st.rem===0? '' : String(st.rem)) + String(digits[i+1]);
-        endCol=i+1;
-      } else {
-        val=String(st.rem); endCol=i; // 最後＝あまり（0ならわりきれ）
-      }
-      rows.push({kind:'remainder', pos:i, endCol:endCol, val:val});
-    });
-    return {ld:ld, digits:digits, N:digits.length, rows:rows, qd:ld.qd, finalRem:ld.finalRem};
   }
 
   // 余りなし候補（小数÷整数）
@@ -503,16 +468,12 @@
   // ===== 筆算 =====
   function goCalc(){
     phase='calc';
-    if(current.mode===3 && current.variant==='A') step4=null;
     $('beakerPhase').classList.add('hidden'); $('calcPhase').classList.remove('hidden'); $('checkPhase').classList.add('hidden');
     $('phaseTag').textContent='② ひっ算'; $('phaseTag').className='phase-tag tag-calc';
     $('fb').innerHTML=''; $('hintbox').classList.add('hidden');
     startQTimer(TIME_LIMIT);
     if(current.mode===0){ calcState={ld:longDivision(current.a10,current.b),stepIdx:0}; renderLong(); }
-    else if(current.mode===3){
-      if(current.variant==='A'){ render4Step(); }
-      else { calcState={ld:longDivision(current.a,current.b),stepIdx:0}; renderLong(); }
-    }
+    else if(current.mode===3){ calcState={ld:longDivision(current.a,current.b),stepIdx:0}; renderLong(); }
     else { buildTenfold(); }
   }
 
@@ -559,112 +520,6 @@
       [].forEach.call($('choices').children,function(c){if(parseInt(c.textContent)===correct)c.classList.add('right');});
       setTimeout(function(){ calcState.stepIdx++; if(calcState.stepIdx>=calcState.ld.qd.length){ goCheck(); } else { renderLong(); } },750);
     }
-  }
-
-  var step4=null;
-  function render4Step(){
-    if(!step4){
-      var hm=hissanModel(current.a, current.b);
-      step4={hm:hm, pos:0, sub:'tate', q:[], shownProd:[], shownRemDigits:[]};
-      for(var i=0;i<hm.qd.length;i++){ step4.shownProd.push(false); step4.shownRemDigits.push(0); }
-    }
-    drawHissan(); drawStepButtons(); drawStepInstr();
-  }
-
-  function cellRowHTML(text, endCol, N, extraClass){
-    var cells=[]; for(var c=0;c<N;c++) cells[c]='<span class="hc"></span>';
-    var startCol=endCol-(text.length-1);
-    for(var k=0;k<text.length;k++){ var col=startCol+k; if(col>=0&&col<N) cells[col]='<span class="hc">'+text.charAt(k)+'</span>'; }
-    return '<div class="hr '+(extraClass||'')+'"><span class="lead"></span>'+cells.join('')+'</div>';
-  }
-
-  function drawHissan(){
-    var hm=step4.hm, N=hm.N, b=current.b;
-    var qcells=[]; for(var c=0;c<N;c++){
-      if(c<step4.q.length) qcells[c]='<span class="hc">'+step4.q[c]+'</span>';
-      else if(c===step4.pos && step4.sub==='tate') qcells[c]='<span class="hc"><span class="qblank active">?</span></span>';
-      else qcells[c]='<span class="hc"><span class="qblank">_</span></span>';
-    }
-    var html='<div class="h4">';
-    html+='<div class="hr qrow"><span class="lead"></span>'+qcells.join('')+'</div>';
-    var dcells=[];
-    String(current.a).split('').forEach(function(ch,c){ dcells[c]='<span class="hc">'+ch+'</span>'; });
-    html+='<div class="hr"><span class="lead">'+b+')</span>'+dcells.join('')+'</div>';
-    hm.rows.forEach(function(row){
-      var visible=false, text=row.val, cls='', ecol=row.endCol;
-      if(row.kind==='product'){ visible=step4.shownProd[row.pos]; cls='barline'; }
-      else {
-        var stg=step4.shownRemDigits[row.pos];
-        if(stg===0){ visible=false; }
-        else if(stg===1){ visible=true; var st=hm.ld.steps[row.pos]; text=String(st.rem); ecol=row.pos; }
-        else { visible=true; text=row.val; }
-      }
-      if(!visible) return;
-      html+=cellRowHTML(text, ecol, N, cls);
-    });
-    html+='</div>';
-    $('calcBox').innerHTML=html;
-  }
-
-  function drawStepInstr(){
-    var hm=step4.hm, b=current.b, pos=step4.pos;
-    var st=hm.ld.steps[pos];
-    var names={tate:'たてる', kake:'かける', hiku:'ひく', oroshi:'おろす'};
-    var detail={
-      tate:'いま '+st.cur+' ÷ '+b+' の 商は？',
-      kake:'商 '+step4.q[pos]+' × '+b+' を 書こう（ボタン）',
-      hiku:st.cur+' − '+(st.qd*b)+' を しよう（ボタン）',
-      oroshi:'つぎの '+(hm.digits[pos+1])+' を おろそう（ボタン）'
-    };
-    $('instr').innerHTML='<b>'+names[step4.sub]+'</b>：'+detail[step4.sub];
-  }
-
-  function drawStepButtons(){
-    var hm=step4.hm;
-    var last=(step4.pos===hm.qd.length-1);
-    var order=last? ['tate','kake','hiku'] : ['tate','kake','hiku','oroshi'];
-    var ch=$('choices'); ch.innerHTML='';
-    if(step4.sub==='tate'){
-      var correct=hm.qd[step4.pos];
-      makeDigitChoices(correct).forEach(function(v){
-        var bb=document.createElement('button'); bb.className='choice'; bb.textContent=v;
-        bb.onclick=function(){ pick4Tate(v,bb,correct); }; ch.appendChild(bb);
-      });
-    }
-    var wrapB=document.createElement('div'); wrapB.className='step4btns';
-    var labels={tate:'たてる',kake:'かける',hiku:'ひく',oroshi:'おろす'};
-    order.forEach(function(s){
-      var bb=document.createElement('button'); bb.textContent=labels[s];
-      var doneOrder=order.indexOf(s)<order.indexOf(step4.sub);
-      if(doneOrder) bb.classList.add('done');
-      if(s===step4.sub && s!=='tate') bb.classList.add('on');
-      if(s==='tate') bb.disabled=true;
-      bb.onclick=function(){ press4Step(s); };
-      wrapB.appendChild(bb);
-    });
-    $('calcBox').appendChild(wrapB);
-  }
-
-  function pick4Tate(v,btn,correct){
-    if(dead)return;
-    if(v===correct){ btn.classList.add('right'); step4.q[step4.pos]=correct; step4.sub='kake'; $('fb').innerHTML='商 '+correct+' を たてた！'; $('fb').style.color='#149a52'; render4Step(); }
-    else { btn.classList.add('wrong'); missedThisQ=true; $('fb').innerHTML='この位の 商は '+correct+' だよ'; $('fb').style.color='#c23b3b';
-      var box=$('wrap'); box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake');
-      step4.q[step4.pos]=correct; setTimeout(function(){ step4.sub='kake'; render4Step(); },700); }
-  }
-
-  function press4Step(s){
-    if(dead)return;
-    if(s!==step4.sub){ $('fb').innerHTML='つぎは「'+({tate:'たてる',kake:'かける',hiku:'ひく',oroshi:'おろす'})[step4.sub]+'」だよ'; $('fb').style.color='#c23b3b';
-      var box=$('wrap'); box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake'); return; }
-    var hm=step4.hm, pos=step4.pos, last=(pos===hm.qd.length-1);
-    if(s==='kake'){ step4.shownProd[pos]=true; step4.sub='hiku'; render4Step(); return; }
-    if(s==='hiku'){ step4.shownRemDigits[pos]=1;
-      if(last){ setTimeout(goCheck,700);
-        $('fb').innerHTML=(hm.finalRem===0?'わりきれた！':'あまり '+hm.finalRem+'！'); $('fb').style.color='#149a52';
-      } else { step4.sub='oroshi'; }
-      render4Step(); return; }
-    if(s==='oroshi'){ step4.shownRemDigits[pos]=2; step4.pos++; step4.sub='tate'; render4Step(); return; }
   }
 
   function buildTenfold(){
@@ -767,7 +622,7 @@
   // 同じ問題を最初（ビーカー）からやり直し
   function reloadSameQuestion(){
     phase='beaker'; missedThisQ=false;
-    step4=null; bundleStage='tens'; tensPer=0; onesPer=0;
+    bundleStage='tens'; tensPer=0; onesPer=0;
     $('phaseTag').textContent='① ビーカーで分ける'; $('phaseTag').className='phase-tag tag-beaker';
     $('remBadge').classList.toggle('hidden', !current.hasRem);
     $('story').textContent=current.story; $('problem').textContent=current.prob+' = ?';
@@ -784,7 +639,7 @@
     var plan = (usePlan && qPlan[qIndex]) ? qPlan[qIndex] : {b:null, rem:false};
     current=gen(mode, usePlan ? plan.rem : false, usePlan ? plan.b : null);
     phase='beaker'; missedThisQ=false;
-    step4=null; bundleStage='tens'; tensPer=0; onesPer=0;
+    bundleStage='tens'; tensPer=0; onesPer=0;
     $('qN').textContent=qIndex+1; $('stageName').textContent=STAGE_NAMES[mode];
     $('phaseTag').textContent='① ビーカーで分ける'; $('phaseTag').className='phase-tag tag-beaker';
     $('remBadge').classList.toggle('hidden', !current.hasRem);
@@ -881,20 +736,6 @@
     ok(g.tens*10+g.ones===g.a, 'tens/ones decompose a');
     var gr=genInt(true,'A',null);
     ok(gr.hasRem===true && gr.rem>0, 'genInt rem case');
-    // --- hissanModel ---
-    var hm=hissanModel(48,3);
-    ok(hm.qd.join('')==='16', 'hm 48/3 quotient 16');
-    ok(hm.finalRem===0, 'hm 48/3 rem 0');
-    ok(hm.rows.length===4, 'hm rows=4');
-    ok(hm.rows[0].kind==='product' && hm.rows[0].val==='3' && hm.rows[0].endCol===0, 'p0 = 3 @col0');
-    ok(hm.rows[1].kind==='remainder' && hm.rows[1].val==='18' && hm.rows[1].endCol===1, 'rem0 brings -> 18 @col1');
-    ok(hm.rows[2].val==='18' && hm.rows[2].endCol===1, 'p1 = 18 @col1');
-    ok(hm.rows[3].val==='0' && hm.rows[3].endCol===1, 'rem1 = 0 @col1');
-    var hm2=hissanModel(62,2);
-    ok(hm2.rows[1].val==='2', '62/2 no leading zero in brought value: '+hm2.rows[1].val);
-    var hm3=hissanModel(53,4);
-    ok(hm3.qd.join('')==='13' && hm3.finalRem===1, 'hm 53/4 = 13 r1');
-    ok(hm3.rows[hm3.rows.length-1].val==='1', '53/4 final remainder shows 1');
     console.log('=== done, fails =', fails, '===');
   }
   if(location.hash==='#test') runSelfTests();
