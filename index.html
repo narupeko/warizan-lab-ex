@@ -27,6 +27,14 @@
   .s1{border-color:var(--orange); box-shadow:0 5px 0 var(--orange);}
   .s2{border-color:#2e7de0; box-shadow:0 5px 0 #2e7de0;}
   .s3{border-color:var(--cyan); box-shadow:0 5px 0 #0fae9c;}
+  .s4{border-color:#0aa; box-shadow:0 5px 0 #088;}
+  #intMenu{margin:-4px 0 12px; padding:10px; border:3px dashed #0aa; border-radius:16px; background:#e8fbff;}
+  #intMenu .mtitle{font-size:12px; font-weight:800; color:#077; text-align:center; margin-bottom:8px;}
+  #intMenu .mbtns{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  #intMenu button{border:3px solid var(--ink); border-radius:14px; padding:10px 6px; cursor:pointer; background:#fff;
+    font-family:inherit; font-weight:800; font-size:14px; color:var(--ink); box-shadow:0 4px 0 var(--ink);}
+  #intMenu button:active{transform:translateY(2px); box-shadow:0 2px 0 var(--ink);}
+  #intMenu button small{display:block; font-weight:700; font-size:11px; color:#888; margin-top:2px;}
   .best{text-align:center; margin-top:12px; font-size:13px; font-weight:800; color:#7a6ba0;}
   .hud{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:6px;}
   .pill{background:var(--ink); color:#fff; border-radius:30px; padding:6px 12px; font-weight:800; font-size:14px; white-space:nowrap;}
@@ -121,6 +129,14 @@
     <button class="stage-btn s1" data-mode="0"><span class="emoji">🧪</span>小数 ÷ 整数 ラボ<small>分けると元が減る！残りが「あまり」だよ</small></button>
     <button class="stage-btn s2" data-mode="1"><span class="emoji">📏</span>整数 ÷ 小数 ラボ<small>「何コ分とれる？」を ビーカーで体験</small></button>
     <button class="stage-btn s3" data-mode="2"><span class="emoji">🥤</span>小数 ÷ 小数 ラボ<small>小数を小数で分ける しくみ</small></button>
+    <button class="stage-btn s4" id="intStageBtn"><span class="emoji">➗</span>2ケタ ÷ 1ケタ ラボ<small>たば＆ばらで分けて、はじめての筆算！</small></button>
+    <div id="intMenu" class="hidden">
+      <div class="mtitle">どっちで やる？</div>
+      <div class="mbtns">
+        <button data-variant="A" data-timed="0">🌱 れんしゅう<small>タイマー無し・4ステップ筆算</small></button>
+        <button data-variant="B" data-timed="1">🔥 ちょうせん<small>タイマーあり・数字えらび</small></button>
+      </div>
+    </div>
     <div class="best" id="bestline"></div>
   </section>
 
@@ -178,8 +194,8 @@
   for(var i=0;i<36;i++){var s=document.createElement('div');s.className='star';var sz=Math.random()*3+1;s.style.width=sz+'px';s.style.height=sz+'px';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.animationDelay=Math.random()*3+'s';sc.appendChild(s);}
 
   var TOTAL_Q=10, TIME_LIMIT=30, REM_COUNT=3;
-  var STAGE_NAMES=['🧪 小数 ÷ 整数 ラボ','📏 整数 ÷ 小数 ラボ','🥤 小数 ÷ 小数 ラボ'];
-  var mode=0, qIndex=0, combo=0, maxCombo=0, rightCount=0;
+  var STAGE_NAMES=['🧪 小数 ÷ 整数 ラボ','📏 整数 ÷ 小数 ラボ','🥤 小数 ÷ 小数 ラボ','➗ 2ケタ ÷ 1ケタ ラボ'];
+  var mode=0, qIndex=0, combo=0, maxCombo=0, rightCount=0, variant='A', timed=true;
   var startTime=0, qTimer=null, qTimeLeft=TIME_LIMIT, current=null, phase='beaker';
   var beakerVals=[], srcRemain=0, calcState=null, dead=false, remSchedule=[], qPlan=[], missedThisQ=false;
 
@@ -257,6 +273,7 @@
   }
 
   function gen(m, withRem, forceB){
+    if(m===3){ return genInt(withRem, variant, forceB); }
     var o={mode:m, hasRem:!!withRem};
     if(m===0){
       var poolN = (withRem?MODE0R:MODE0).filter(function(P){ return forceB? P.b===forceB : true; });
@@ -587,9 +604,11 @@
     for(var q=0;q<TOTAL_Q;q++){ qPlan.push({b:base[q], rem:!!remSet[q]}); }
   }
 
-  function startGame(m){
-    mode=m; qIndex=0; combo=0; maxCombo=0; rightCount=0; dead=false;
+  function startGame(m, variantSel, timedSel){
+    mode=m; variant=variantSel||'A'; timed=(timedSel===undefined)? true : !!timedSel;
+    qIndex=0; combo=0; maxCombo=0; rightCount=0; dead=false;
     $('comboN').textContent=0; $('progressbar').style.width='0%';
+    $('timePill').classList.toggle('hidden', !timed);
     buildPlan();
     show('game'); loadQuestion(); startTime=Date.now();
   }
@@ -605,7 +624,14 @@
     show('result');
   }
 
-  [].forEach.call(document.querySelectorAll('.stage-btn'),function(b){ b.onclick=function(){ startGame(parseInt(b.dataset.mode)); }; });
+  [].forEach.call(document.querySelectorAll('.stage-btn'),function(b){
+    if(b.id==='intStageBtn') return;
+    b.onclick=function(){ startGame(parseInt(b.dataset.mode), 'B', true); };
+  });
+  $('intStageBtn').onclick=function(){ $('intMenu').classList.toggle('hidden'); };
+  [].forEach.call(document.querySelectorAll('#intMenu button'),function(b){
+    b.onclick=function(){ startGame(3, b.dataset.variant, b.dataset.timed==='1'); };
+  });
   $('checkBeaker').onclick=checkBeaker; $('nextBtn').onclick=nextQuestion;
   $('hintbtn').onclick=function(){ $('hintbox').classList.toggle('hidden'); };
   $('retry').onclick=function(){ startGame(mode); };
