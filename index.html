@@ -112,11 +112,15 @@
   .ld .r{display:flex; align-items:center; height:32px;}
   .cellnum{width:28px; text-align:center; flex:none;}
   .celldot{width:12px; text-align:center;}
-  .ld .lead2{display:inline-block; width:42px; text-align:right; white-space:nowrap; flex:none;}
-  .ld .lead2 .divisor{margin-right:2px;} .ld .lead2 .bracket{margin-right:0;}
-  .cellnum.roof{border-top:3px solid var(--ink);}
-  .cellnum.subline{border-top:3px solid var(--ink);}
-  .cellnum.remval{color:var(--rem); font-weight:800;} .cellnum.okval{color:#149a52; font-weight:800;}
+  /* 整数筆算：全マスをグリッドで厳密に整列 */
+  .ldg{display:inline-grid; row-gap:2px; font-family:'Mochiy Pop One',sans-serif; font-size:26px;}
+  .lcell{height:32px; display:flex; align-items:center; justify-content:center; line-height:1;}
+  .lcell.lead{justify-content:flex-end; white-space:nowrap; font-size:24px;}
+  .lcell.lead .bracket{margin:0;} .lcell.lead .divisor{margin:0 1px 0 0;}
+  .lcell.roof{border-top:3px solid var(--ink);}
+  .lcell.subline{border-top:3px solid var(--ink);}
+  .lcell.filledcell{color:#149a52;}
+  .lcell.remval{color:var(--rem); font-weight:800;} .lcell.okval{color:#149a52; font-weight:800;}
   .blankcell{display:inline-block; width:28px; height:32px; line-height:28px; text-align:center; border:3px dashed var(--orange); border-radius:8px; color:#c98a3a; background:#fff7e6;}
   .blankcell.active{background:var(--yellow); animation:blink 1s infinite;}
   @keyframes blink{0%,100%{box-shadow:0 0 0 0 rgba(255,210,63,.6);}50%{box-shadow:0 0 0 5px rgba(255,210,63,0);}}
@@ -587,45 +591,40 @@
   // 整数(2ケタ÷1ケタ)用：数字えらびのまま、ひき算と「下ろした数」を筆算の下に自動表示
   function renderLongInt(){
     var ld=calcState.ld, b=current.b, aStr=String(current.a), N=aStr.length, si=calcState.stepIdx;
-    // すべての行を「固定幅の左端(lead2) ＋ N個の桁セル」でそろえて、列を一致させる
-    function lead(content){ return '<span class="lead2">'+(content||'')+'</span>'; }
-    function cellsRow(textt,endCol,cls){
-      var cells=[]; for(var k=0;k<N;k++) cells[k]='<span class="cellnum"></span>';   // 空きマスには線を引かない
-      var start=endCol-(textt.length-1);
-      for(var j=0;j<textt.length;j++){ var col=start+j; if(col>=0&&col<N) cells[col]='<span class="cellnum'+(cls?' '+cls:'')+'">'+textt.charAt(j)+'</span>'; }
-      return '<div class="r">'+lead('')+cells.join('')+'</div>';
-    }
+    var done=(si>=ld.qd.length);
+    var leadEmpty='<div class="lcell lead"></div>';
+    var leadDiv='<div class="lcell lead"><span class="divisor">'+b+'</span><span class="bracket">)</span></div>';
+    var html='';
     // 商の行
-    var qcells=''; for(var c=0;c<N;c++){
-      if(c<si) qcells+='<span class="cellnum filledcell">'+ld.qd[c]+'</span>';
-      else if(c===si) qcells+='<span class="cellnum"><span class="blankcell active">?</span></span>';
-      else qcells+='<span class="cellnum"><span class="blankcell">_</span></span>';
+    html+=leadEmpty;
+    for(var c=0;c<N;c++){
+      if(c<si) html+='<div class="lcell filledcell">'+ld.qd[c]+'</div>';
+      else if(c===si) html+='<div class="lcell"><span class="blankcell active">?</span></div>';
+      else html+='<div class="lcell"><span class="blankcell">_</span></div>';
     }
-    var html='<div class="ld"><div class="r">'+lead('')+qcells+'</div>';
-    // わる数）わられる数（屋根の線つき）
-    var dcells=''; for(var d=0;d<N;d++){ dcells+='<span class="cellnum roof">'+aStr.charAt(d)+'</span>'; }
-    html+='<div class="r">'+lead('<span class="divisor">'+b+'</span><span class="bracket">)</span>')+dcells+'</div>';
-    // 各位の ひく数 → ひき算の線（結果の幅）→ ひいた残り＋下ろした数
-    function remRow(textt,endCol,lineFrom,lineTo,hiCls){
-      var hc=hiCls?' '+hiCls:'';
-      var cells=[]; for(var k=0;k<N;k++){ var lc=(k>=lineFrom&&k<=lineTo)?' subline':''; cells[k]='<span class="cellnum'+lc+'"></span>'; }
-      var start=endCol-(textt.length-1);
-      for(var j=0;j<textt.length;j++){ var col=start+j; if(col>=0&&col<N){ var lc2=(col>=lineFrom&&col<=lineTo)?' subline':''; cells[col]='<span class="cellnum'+lc2+hc+'">'+textt.charAt(j)+'</span>'; } }
-      return '<div class="r">'+lead('')+cells.join('')+'</div>';
-    }
-    var done=(si>=ld.qd.length);   // 全部の位を求めおわった＝完成（あまりまで表示）
+    // わる数）わられる数（屋根の線）
+    html+=leadDiv;
+    for(var d=0;d<N;d++) html+='<div class="lcell roof">'+aStr.charAt(d)+'</div>';
+    // 各位：ひく数 → ひき算の線つき結果（ひいた残り＋下ろした数）
     for(var s=0;s<si;s++){
-      var st=ld.steps[s], isLast=(s===N-1);
-      html+=cellsRow(String(st.sub), s, '');                  // ひく数（線なし）
+      var st=ld.steps[s], isLast=(s===N-1), subS=String(st.sub), subStart=s-(subS.length-1);
+      html+=leadEmpty;
+      for(var c2=0;c2<N;c2++){ html+='<div class="lcell">'+((c2>=subStart&&c2<=s)?subS.charAt(c2-subStart):'')+'</div>'; }
       var rtext, rcol;
       if(!isLast){ rtext=(st.rem===0?'':String(st.rem))+aStr.charAt(s+1); rcol=s+1; }
       else { rtext=String(st.rem); rcol=s; }
-      var lineFrom=s-(String(st.sub).length-1); if(lineFrom<0) lineFrom=0;   // ひく数の左端
-      var hi=(isLast&&done)? (st.rem>0?'remval':'okval') : '';               // 最後の残り＝あまり を強調
-      html+=remRow(rtext, rcol, lineFrom, rcol, hi);          // 線は ひく数〜下ろした桁（＝結果の幅）
+      var hi=(isLast&&done)? (st.rem>0?'remval':'okval') : '';
+      var lineFrom=subStart<0?0:subStart, rStart=rcol-(rtext.length-1);
+      html+=leadEmpty;
+      for(var c3=0;c3<N;c3++){
+        var cls='lcell', t='';
+        if(c3>=lineFrom && c3<=rcol) cls+=' subline';                 // 線は ひく数〜下ろした桁（結果の幅）
+        if(c3>=rStart && c3<=rcol){ t=rtext.charAt(c3-rStart); if(hi) cls+=' '+hi; }
+        html+='<div class="'+cls+'">'+t+'</div>';
+      }
     }
-    html+='</div>';
-    $('calcBox').innerHTML=html;
+    var colTmpl='44px'; for(var i=0;i<N;i++) colTmpl+=' 28px';
+    $('calcBox').innerHTML='<div class="ldg" style="grid-template-columns:'+colTmpl+';">'+html+'</div>';
     var ch=$('choices'); ch.innerHTML='';
     if(done){
       // あまりまで見せて、答えあわせへ進むボタン
