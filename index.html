@@ -588,16 +588,16 @@
     String(current.a).split('').forEach(function(ch,c){ dcells[c]='<span class="hc">'+ch+'</span>'; });
     html+='<div class="hr"><span class="lead">'+b+')</span>'+dcells.join('')+'</div>';
     hm.rows.forEach(function(row){
-      var visible=false, text=row.val, cls='';
+      var visible=false, text=row.val, cls='', ecol=row.endCol;
       if(row.kind==='product'){ visible=step4.shownProd[row.pos]; cls='barline'; }
       else {
         var stg=step4.shownRemDigits[row.pos];
         if(stg===0){ visible=false; }
-        else if(stg===1){ visible=true; var st=hm.ld.steps[row.pos]; text=String(st.rem); }
+        else if(stg===1){ visible=true; var st=hm.ld.steps[row.pos]; text=String(st.rem); ecol=row.pos; }
         else { visible=true; text=row.val; }
       }
       if(!visible) return;
-      html+=cellRowHTML(text, row.endCol, N, cls);
+      html+=cellRowHTML(text, ecol, N, cls);
     });
     html+='</div>';
     $('calcBox').innerHTML=html;
