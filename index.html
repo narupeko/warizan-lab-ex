@@ -1,4 +1,12 @@
 <!DOCTYPE html>
+<!--
+  このアプリは「わり算ラボ」をもとに改変して作成したものです。
+  Original work: 「わり算ラボ」 by shintajiri（田尻慎太郎 / Shintaro Tajiri）
+  Source: https://github.com/shintajiri/warizan-lab
+  License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+  改変内容（Modifications）: 整数 2ケタ÷1ケタ モード（たば＆ばら＋数字えらび筆算）の追加、
+  ゲーム中のホームボタン追加、モードの並び替え、親モード（問題数設定）の追加、UI文言の調整 ほか。
+-->
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -42,6 +50,8 @@
   .setting-card.soon{opacity:.65; border-style:dashed;}
   .setting-title{font-family:'Mochiy Pop One',sans-serif; font-size:16px; color:var(--ink); margin-bottom:10px;}
   .setting-val{font-family:'Mochiy Pop One',sans-serif; font-size:26px; color:var(--cyan); margin-top:8px;}
+  .credit{margin-top:16px; font-size:11px; line-height:1.6; color:#8a7bb0; text-align:center; font-weight:700;}
+  .credit a{color:#6a5b95;}
   .hud{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:6px;}
   .pill{background:var(--ink); color:#fff; border-radius:30px; padding:6px 12px; font-weight:800; font-size:14px; white-space:nowrap;}
   .pill.danger{background:#c23b3b; animation:pulse .5s infinite;}
@@ -156,6 +166,7 @@
     <button class="stage-btn s3" data-mode="2"><span class="emoji">🥤</span>小数 ÷ 小数 ラボ<small>小数を小数で分ける しくみ</small></button>
     <div class="best" id="bestline"></div>
     <button class="parentbtn" id="parentBtn">⚙️ おうちのひと へ</button>
+    <div class="credit">もとにした作品：「わり算ラボ」 作：<a href="https://github.com/shintajiri/warizan-lab" target="_blank" rel="noopener">田尻慎太郎（shintajiri）</a> ／ <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>（改変あり）</div>
   </section>
 
   <section id="game" class="hidden">
