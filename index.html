@@ -110,9 +110,12 @@
   .calc-box{font-family:'Mochiy Pop One',sans-serif; display:flex; justify-content:center; margin:6px 0 10px;}
   .ld{display:inline-grid; row-gap:2px; font-size:24px;}
   .ld .r{display:flex; align-items:center; height:32px;}
-  .cellnum{width:28px; text-align:center;}
-  .cellnum.barline{border-top:3px solid var(--ink);}
+  .cellnum{width:28px; text-align:center; flex:none;}
   .celldot{width:12px; text-align:center;}
+  .ld .lead2{display:inline-block; width:42px; text-align:right; white-space:nowrap; flex:none;}
+  .ld .lead2 .divisor{margin-right:2px;} .ld .lead2 .bracket{margin-right:0;}
+  .cellnum.roof{border-top:3px solid var(--ink);}
+  .cellnum.subbar{border-bottom:3px solid var(--ink);}
   .blankcell{display:inline-block; width:28px; height:32px; line-height:28px; text-align:center; border:3px dashed var(--orange); border-radius:8px; color:#c98a3a; background:#fff7e6;}
   .blankcell.active{background:var(--yellow); animation:blink 1s infinite;}
   @keyframes blink{0%,100%{box-shadow:0 0 0 0 rgba(255,210,63,.6);}50%{box-shadow:0 0 0 5px rgba(255,210,63,0);}}
@@ -583,32 +586,35 @@
   // 整数(2ケタ÷1ケタ)用：数字えらびのまま、ひき算と「下ろした数」を筆算の下に自動表示
   function renderLongInt(){
     var ld=calcState.ld, b=current.b, aStr=String(current.a), N=aStr.length, si=calcState.stepIdx;
-    var qrow='<div class="r qline" style="margin-left:40px;">';
-    for(var c=0;c<N;c++){
-      if(c<si) qrow+='<span class="cellnum filledcell">'+ld.qd[c]+'</span>';
-      else if(c===si) qrow+='<span class="cellnum"><span class="blankcell active">?</span></span>';
-      else qrow+='<span class="cellnum"><span class="blankcell">_</span></span>';
-    }
-    qrow+='</div>';
-    var drow='<div class="r"><span class="divisor">'+b+'</span><span class="bracket">)</span>';
-    for(var d=0;d<N;d++){ drow+='<span class="cellnum">'+aStr.charAt(d)+'</span>'; }
-    drow+='</div>';
-    function rowCells(textt,endCol,cls){
+    // すべての行を「固定幅の左端(lead2) ＋ N個の桁セル」でそろえて、列を一致させる
+    function lead(content){ return '<span class="lead2">'+(content||'')+'</span>'; }
+    function cellsRow(textt,endCol,cls){
       var cells=[]; for(var k=0;k<N;k++) cells[k]='<span class="cellnum'+(cls?' '+cls:'')+'"></span>';
       var start=endCol-(textt.length-1);
       for(var j=0;j<textt.length;j++){ var col=start+j; if(col>=0&&col<N) cells[col]='<span class="cellnum'+(cls?' '+cls:'')+'">'+textt.charAt(j)+'</span>'; }
-      return '<div class="r" style="margin-left:40px;">'+cells.join('')+'</div>';
+      return '<div class="r">'+lead('')+cells.join('')+'</div>';
     }
-    var worked='';
+    // 商の行
+    var qcells=''; for(var c=0;c<N;c++){
+      if(c<si) qcells+='<span class="cellnum filledcell">'+ld.qd[c]+'</span>';
+      else if(c===si) qcells+='<span class="cellnum"><span class="blankcell active">?</span></span>';
+      else qcells+='<span class="cellnum"><span class="blankcell">_</span></span>';
+    }
+    var html='<div class="ld"><div class="r">'+lead('')+qcells+'</div>';
+    // わる数）わられる数（屋根の線つき）
+    var dcells=''; for(var d=0;d<N;d++){ dcells+='<span class="cellnum roof">'+aStr.charAt(d)+'</span>'; }
+    html+='<div class="r">'+lead('<span class="divisor">'+b+'</span><span class="bracket">)</span>')+dcells+'</div>';
+    // 各位の ひく数（線つき）→ ひいた残り＋下ろした数
     for(var s=0;s<si;s++){
       var st=ld.steps[s], isLast=(s===N-1);
-      worked+=rowCells(String(st.sub), s, 'barline');                 // ひく数（商×わる数）
+      html+=cellsRow(String(st.sub), s, 'subbar');
       var rtext, rcol;
-      if(!isLast){ rtext=(st.rem===0?'':String(st.rem))+aStr.charAt(s+1); rcol=s+1; } // ひいた残り＋下ろした数
+      if(!isLast){ rtext=(st.rem===0?'':String(st.rem))+aStr.charAt(s+1); rcol=s+1; }
       else { rtext=String(st.rem); rcol=s; }
-      worked+=rowCells(rtext, rcol, '');
+      html+=cellsRow(rtext, rcol, '');
     }
-    $('calcBox').innerHTML='<div class="ld">'+qrow+drow+worked+'</div>';
+    html+='</div>';
+    $('calcBox').innerHTML=html;
     var correct=ld.qd[si], opts=makeDigitChoices(correct), ch=$('choices'); ch.innerHTML='';
     opts.forEach(function(v){ var bb=document.createElement('button'); bb.className='choice'; bb.textContent=v; bb.onclick=function(){pickDigit(v,bb,correct);}; ch.appendChild(bb); });
     var cur=ld.steps[si];
