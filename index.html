@@ -196,6 +196,28 @@
     return {qd:qd, qfull:parseInt(qd.join(''),10), finalRem:carry, steps:steps};
   }
 
+  // A型筆算の段組みモデル：各位の積／ひいた残り＋おろし を列位置つきで返す
+  function hissanModel(a,b){
+    var ld=longDivision(a,b);
+    var digits=String(a).split('').map(Number);
+    var rows=[];
+    ld.steps.forEach(function(st,i){
+      // 積（商d×b）：いま処理した桁 i に右そろえ
+      rows.push({kind:'product', pos:i, endCol:i, val:String(st.sub)});
+      var isLast=(i===ld.steps.length-1);
+      var val, endCol;
+      if(!isLast){
+        // ひいた残り st.rem に 次の桁を おろす。残り0なら先頭0は書かない
+        val=(st.rem===0? '' : String(st.rem)) + String(digits[i+1]);
+        endCol=i+1;
+      } else {
+        val=String(st.rem); endCol=i; // 最後＝あまり（0ならわりきれ）
+      }
+      rows.push({kind:'remainder', pos:i, endCol:endCol, val:val});
+    });
+    return {ld:ld, digits:digits, N:digits.length, rows:rows, qd:ld.qd, finalRem:ld.finalRem};
+  }
+
   // 余りなし候補（小数÷整数）
   var MODE0=[]; for(var b=2;b<=5;b++){ for(var Q10=11;Q10<=25;Q10++){ var a10=Q10*b; if(a10%10!==0 && a10<=100){ MODE0.push({b:b,Q10:Q10}); } } }
   // 余りあり候補（小数÷整数）
@@ -613,6 +635,20 @@
     ok(g.tens*10+g.ones===g.a, 'tens/ones decompose a');
     var gr=genInt(true,'A',null);
     ok(gr.hasRem===true && gr.rem>0, 'genInt rem case');
+    // --- hissanModel ---
+    var hm=hissanModel(48,3);
+    ok(hm.qd.join('')==='16', 'hm 48/3 quotient 16');
+    ok(hm.finalRem===0, 'hm 48/3 rem 0');
+    ok(hm.rows.length===4, 'hm rows=4');
+    ok(hm.rows[0].kind==='product' && hm.rows[0].val==='3' && hm.rows[0].endCol===0, 'p0 = 3 @col0');
+    ok(hm.rows[1].kind==='remainder' && hm.rows[1].val==='18' && hm.rows[1].endCol===1, 'rem0 brings -> 18 @col1');
+    ok(hm.rows[2].val==='18' && hm.rows[2].endCol===1, 'p1 = 18 @col1');
+    ok(hm.rows[3].val==='0' && hm.rows[3].endCol===1, 'rem1 = 0 @col1');
+    var hm2=hissanModel(62,2);
+    ok(hm2.rows[1].val==='2', '62/2 no leading zero in brought value: '+hm2.rows[1].val);
+    var hm3=hissanModel(53,4);
+    ok(hm3.qd.join('')==='13' && hm3.finalRem===1, 'hm 53/4 = 13 r1');
+    ok(hm3.rows[hm3.rows.length-1].val==='1', '53/4 final remainder shows 1');
     console.log('=== done, fails =', fails, '===');
   }
   if(location.hash==='#test') runSelfTests();
