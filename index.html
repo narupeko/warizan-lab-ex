@@ -39,6 +39,8 @@
   .hud{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:6px;}
   .pill{background:var(--ink); color:#fff; border-radius:30px; padding:6px 12px; font-weight:800; font-size:14px; white-space:nowrap;}
   .pill.danger{background:#c23b3b; animation:pulse .5s infinite;}
+  .homebtn{background:#fff; color:var(--ink); border:3px solid var(--ink); border-radius:30px; padding:3px 11px; font-size:16px; font-weight:800; cursor:pointer; font-family:inherit; box-shadow:0 3px 0 var(--ink); line-height:1.4;}
+  .homebtn:active{transform:translateY(2px); box-shadow:0 1px 0 var(--ink);}
   @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.12);}}
   .progress-wrap{height:14px; background:#e7e0f5; border-radius:30px; overflow:hidden; margin-bottom:14px; border:3px solid var(--ink);}
   #progressbar{height:100%; width:0%; background:linear-gradient(90deg,#00d9c0,#ffd23f,#ff5d8f); transition:width .3s;}
@@ -148,10 +150,7 @@
   <section id="home">
     <h1>わり算ラボ</h1>
     <div class="sub">① ビーカーで「分ける」を体験 → ② 筆算 → ③ たしかめ算<br>⏱️ 1フェーズ 30びょう！ おそいと バクハツ💥（同じ問題からやりなおし）</div>
-    <button class="stage-btn s1" data-mode="0"><span class="emoji">🧪</span>小数 ÷ 整数 ラボ<small>分けると元が減る！残りが「あまり」だよ</small></button>
-    <button class="stage-btn s2" data-mode="1"><span class="emoji">📏</span>整数 ÷ 小数 ラボ<small>「何コ分とれる？」を ビーカーで体験</small></button>
-    <button class="stage-btn s3" data-mode="2"><span class="emoji">🥤</span>小数 ÷ 小数 ラボ<small>小数を小数で分ける しくみ</small></button>
-    <button class="stage-btn s4" id="intStageBtn"><span class="emoji">➗</span>2ケタ ÷ 1ケタ ラボ<small>たば＆ばらで分けて、はじめての筆算！</small></button>
+    <button class="stage-btn s4" id="intStageBtn"><span class="emoji">➗</span>2ケタ ÷ 1ケタ ラボ<small>たば＆ばらで分けて、はじめての筆算！（いちばん基本）</small></button>
     <div id="intMenu" class="hidden">
       <div class="mtitle">どっちで やる？</div>
       <div class="mbtns">
@@ -159,11 +158,15 @@
         <button data-variant="B" data-timed="1">🔥 ちょうせん<small>タイマーあり・数字えらび</small></button>
       </div>
     </div>
+    <button class="stage-btn s1" data-mode="0"><span class="emoji">🧪</span>小数 ÷ 整数 ラボ<small>分けると元が減る！残りが「あまり」だよ</small></button>
+    <button class="stage-btn s2" data-mode="1"><span class="emoji">📏</span>整数 ÷ 小数 ラボ<small>「何コ分とれる？」を ビーカーで体験</small></button>
+    <button class="stage-btn s3" data-mode="2"><span class="emoji">🥤</span>小数 ÷ 小数 ラボ<small>小数を小数で分ける しくみ</small></button>
     <div class="best" id="bestline"></div>
   </section>
 
   <section id="game" class="hidden">
     <div class="hud">
+      <button class="homebtn" id="gameHome" title="ホームへ">🏠</button>
       <span class="pill">📝 <span id="qN">1</span>/10</span>
       <span class="pill">🔥 <span id="comboN">0</span></span>
       <span class="pill" id="timePill">⏱️ <span id="timeN">30.0</span></span>
@@ -850,7 +853,9 @@
   $('checkBeaker').onclick=checkBeaker; $('nextBtn').onclick=nextQuestion;
   $('hintbtn').onclick=function(){ $('hintbox').classList.toggle('hidden'); };
   $('retry').onclick=function(){ startGame(mode, variant, timed); };
-  $('tohome').onclick=function(){ clearInterval(qTimer); $('intMenu').classList.add('hidden'); show('home'); };
+  function goHome(){ clearInterval(qTimer); dead=false; $('intMenu').classList.add('hidden'); show('home'); }
+  $('tohome').onclick=goHome;
+  $('gameHome').onclick=goHome;
 
   function runSelfTests(){
     var fails=0;
