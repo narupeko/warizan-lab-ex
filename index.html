@@ -1,4 +1,12 @@
 <!DOCTYPE html>
+<!--
+  このアプリは「わり算ラボ」をもとに改変して作成したものです。
+  Original work: 「わり算ラボ」 by shintajiri（田尻慎太郎 / Shintaro Tajiri）
+  Source: https://github.com/shintajiri/warizan-lab
+  License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+  改変内容（Modifications）: 整数 2ケタ÷1ケタ モード（たば＆ばら＋数字えらび筆算）の追加、
+  ゲーム中のホームボタン追加、モードの並び替え、親モード（問題数設定）の追加、UI文言の調整 ほか。
+-->
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -36,6 +44,14 @@
   #intMenu button:active{transform:translateY(2px); box-shadow:0 2px 0 var(--ink);}
   #intMenu button small{display:block; font-weight:700; font-size:11px; color:#888; margin-top:2px;}
   .best{text-align:center; margin-top:12px; font-size:13px; font-weight:800; color:#7a6ba0;}
+  .parentbtn{display:block; width:100%; text-align:center; margin-top:16px; background:#efe9fb; border:3px solid #8a7bb0; border-radius:14px; padding:9px; font-family:inherit; font-weight:800; font-size:14px; color:#5a4b80; cursor:pointer; box-shadow:0 4px 0 #8a7bb0;}
+  .parentbtn:active{transform:translateY(2px); box-shadow:0 2px 0 #8a7bb0;}
+  .setting-card{background:#f3eeff; border:3px solid var(--ink); border-radius:18px; padding:16px; margin:14px 0; text-align:center;}
+  .setting-card.soon{opacity:.65; border-style:dashed;}
+  .setting-title{font-family:'Mochiy Pop One',sans-serif; font-size:16px; color:var(--ink); margin-bottom:10px;}
+  .setting-val{font-family:'Mochiy Pop One',sans-serif; font-size:26px; color:var(--cyan); margin-top:8px;}
+  .credit{margin-top:16px; font-size:11px; line-height:1.6; color:#8a7bb0; text-align:center; font-weight:700;}
+  .credit a{color:#6a5b95;}
   .hud{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:6px;}
   .pill{background:var(--ink); color:#fff; border-radius:30px; padding:6px 12px; font-weight:800; font-size:14px; white-space:nowrap;}
   .pill.danger{background:#c23b3b; animation:pulse .5s infinite;}
@@ -149,12 +165,14 @@
     <button class="stage-btn s2" data-mode="1"><span class="emoji">📏</span>整数 ÷ 小数 ラボ<small>「何コ分とれる？」を ビーカーで体験</small></button>
     <button class="stage-btn s3" data-mode="2"><span class="emoji">🥤</span>小数 ÷ 小数 ラボ<small>小数を小数で分ける しくみ</small></button>
     <div class="best" id="bestline"></div>
+    <button class="parentbtn" id="parentBtn">⚙️ おうちのひと へ</button>
+    <div class="credit">もとにした作品：「わり算ラボ」 作：<a href="https://github.com/shintajiri/warizan-lab" target="_blank" rel="noopener">田尻慎太郎（shintajiri）</a> ／ <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>（改変あり）</div>
   </section>
 
   <section id="game" class="hidden">
     <div class="hud">
       <button class="homebtn" id="gameHome" title="ホームへ">🏠</button>
-      <span class="pill">📝 <span id="qN">1</span>/10</span>
+      <span class="pill">📝 <span id="qN">1</span>/<span id="qTotal">10</span></span>
       <span class="pill">🔥 <span id="comboN">0</span></span>
       <span class="pill" id="timePill">⏱️ <span id="timeN">30.0</span></span>
     </div>
@@ -192,11 +210,27 @@
       <div style="font-size:50px;" id="resultEmoji">🏆</div>
       <div class="big" id="resultTitle">クリア！</div>
       <div class="scorecard">クリアタイム<br><span class="num" id="finalTime">0.0</span><span style="font-size:18px;"> びょう</span><br>
-        <span style="font-size:13px;">せいかい <span id="finalRight">0</span>/10 ・ さいだいコンボ <span id="finalCombo">0</span></span></div>
+        <span style="font-size:13px;">せいかい <span id="finalRight">0</span>/<span id="finalTotal">10</span> ・ さいだいコンボ <span id="finalCombo">0</span></span></div>
       <div id="newbest" class="hidden" style="color:var(--pink); font-weight:800; font-size:17px; margin-bottom:8px;">🎉 さいそくタイムこうしん！</div>
       <button class="bigbtn" id="retry">もういちど</button>
       <button class="bigbtn alt" id="tohome" style="margin-top:8px;">ホームへ</button>
     </div>
+  </section>
+
+  <section id="parent" class="hidden">
+    <h1 style="font-size:24px;">👨‍👩‍👧 おうちのひと へ</h1>
+    <div class="sub">もんだいの せっていを かえられます</div>
+    <div class="setting-card">
+      <div class="setting-title">📝 もんだいの かず</div>
+      <input type="range" class="hslider" id="qCountSlider" min="3" max="20" step="1" value="10" style="width:100%;">
+      <div class="setting-val"><span id="qCountVal">10</span> 問</div>
+      <div style="font-size:11px; color:#8a7bb0; font-weight:700; margin-top:4px;">3〜20問・ぜんぶの ラボ 共通</div>
+    </div>
+    <div class="setting-card soon">
+      <div class="setting-title">📒 まちがいノート</div>
+      <div style="font-size:12px; color:#999; font-weight:700;">まちがえた もんだいを きろく<br>（つぎの アップデートで！）</div>
+    </div>
+    <button class="bigbtn" id="parentBack">もどる ▶</button>
   </section>
 </div>
 
@@ -205,18 +239,20 @@
   var sc=document.getElementById('stars');
   for(var i=0;i<36;i++){var s=document.createElement('div');s.className='star';var sz=Math.random()*3+1;s.style.width=sz+'px';s.style.height=sz+'px';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.animationDelay=Math.random()*3+'s';sc.appendChild(s);}
 
-  var TOTAL_Q=10, TIME_LIMIT=30, REM_COUNT=3;
+  var TOTAL_Q=getQCount(), TIME_LIMIT=30;
   var STAGE_NAMES=['🧪 小数 ÷ 整数 ラボ','📏 整数 ÷ 小数 ラボ','🥤 小数 ÷ 小数 ラボ','➗ 2ケタ ÷ 1ケタ ラボ'];
   var mode=0, qIndex=0, combo=0, maxCombo=0, rightCount=0, variant='A', timed=true;
   var startTime=0, qTimer=null, qTimeLeft=TIME_LIMIT, current=null, phase='beaker';
   var beakerVals=[], srcRemain=0, calcState=null, dead=false, remSchedule=[], qPlan=[], missedThisQ=false;
 
   function $(id){return document.getElementById(id);}
-  function show(id){['home','game','result'].forEach(function(x){$(x).classList.toggle('hidden',x!==id);});}
+  function show(id){['home','game','result','parent'].forEach(function(x){$(x).classList.toggle('hidden',x!==id);});}
   function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
   function pick(a){return a[Math.floor(Math.random()*a.length)];}
   function getBest(m){try{return parseFloat(localStorage.getItem('warizanlab2_'+m)||'0');}catch(e){return 0;}}
   function setBest(m,v){try{localStorage.setItem('warizanlab2_'+m,v);}catch(e){}}
+  function getQCount(){try{var v=parseInt(localStorage.getItem('warizan_qcount'));return (v>=3&&v<=20)?v:10;}catch(e){return 10;}}
+  function setQCount(v){try{localStorage.setItem('warizan_qcount',v);}catch(e){}}
 
   function longDivision(a10,b){
     var digits=String(a10).split('').map(Number); var steps=[], carry=0, qd=[];
@@ -653,34 +689,42 @@
   }
 
   // 難易度プランを作る：やさしい→難しいの流れ＋少しランダムに揺らす
+  // 任意の問題数(3〜20)に対応：割る数を やさしい→むずかしい にランプ＋少し揺らす
+  function rampBases(minB,maxB,swapP){
+    var arr=[];
+    for(var q=0;q<TOTAL_Q;q++){
+      var f=TOTAL_Q>1? q/(TOTAL_Q-1) : 0;
+      var b=minB+Math.round(f*(maxB-minB)); if(b<minB)b=minB; if(b>maxB)b=maxB;
+      arr.push(b);
+    }
+    for(var k=0;k<arr.length-1;k++){ if(Math.random()<swapP){ var t=arr[k]; arr[k]=arr[k+1]; arr[k+1]=t; } }
+    return arr;
+  }
+  // あまりあり回の配置：序盤(startFrac まで)は必ず割り切れ。あとは約3割を あまりに
+  function remIndices(startFrac){
+    var start=Math.max(1,Math.floor(TOTAL_Q*startFrac));
+    var pool=[]; for(var j=start;j<TOTAL_Q;j++) pool.push(j);
+    pool.sort(function(){return Math.random()-0.5;});
+    var n=Math.min(pool.length, Math.max(1,Math.round(TOTAL_Q*0.3)));
+    var set={}; pool.slice(0,n).forEach(function(i){ set[i]=true; });
+    return set;
+  }
   function buildPlan(){
     qPlan=[];
     if(mode===3){
-      var bases=[2,3,2,4,3,5,6,4,7,8];
-      for(var k=0;k<bases.length-1;k++){ if(Math.random()<0.3){ var t=bases[k]; bases[k]=bases[k+1]; bases[k+1]=t; } }
-      var rpool=[]; for(var j=4;j<TOTAL_Q;j++) rpool.push(j);
-      rpool.sort(function(){return Math.random()-0.5;});
-      var rset={}; rpool.slice(0,REM_COUNT).forEach(function(idx){ rset[idx]=true; });
+      var bases=rampBases(2,8,0.3), rset=remIndices(0.4);
       for(var q=0;q<TOTAL_Q;q++) qPlan.push({b:bases[q], rem:!!rset[q]});
       return;
     }
     if(mode!==0){ for(var i=0;i<TOTAL_Q;i++) qPlan.push({b:null,rem:false}); return; }
-    // 割る数の難易度: 序盤は2,3中心 → 後半は4,5中心。各問に割る数を割り当て
-    // ベースの並び（やさしい順）
-    var base=[2,2,3,3,4,3,4,5,4,5];
-    // 隣同士をときどき入れ替えて一本調子を崩す
-    for(var k=0;k<base.length-1;k++){ if(Math.random()<0.35){ var t=base[k]; base[k]=base[k+1]; base[k+1]=t; } }
-    // 余りあり回の配置：1問目は必ず割り切れ。中盤以降(3問目=index2 以降)から3つ選ぶ
-    var remPool=[]; for(var j=2;j<TOTAL_Q;j++) remPool.push(j);
-    remPool.sort(function(){return Math.random()-0.5;});
-    var remSet={}; remPool.slice(0,REM_COUNT).forEach(function(idx){ remSet[idx]=true; });
-    for(var q=0;q<TOTAL_Q;q++){ qPlan.push({b:base[q], rem:!!remSet[q]}); }
+    var base=rampBases(2,5,0.35), remSet=remIndices(0.2);
+    for(var q2=0;q2<TOTAL_Q;q2++){ qPlan.push({b:base[q2], rem:!!remSet[q2]}); }
   }
 
   function startGame(m, variantSel, timedSel){
     mode=m; variant=variantSel||'A'; timed=(timedSel===undefined)? true : !!timedSel;
     qIndex=0; combo=0; maxCombo=0; rightCount=0; dead=false;
-    $('comboN').textContent=0; $('progressbar').style.width='0%';
+    $('comboN').textContent=0; $('progressbar').style.width='0%'; $('qTotal').textContent=TOTAL_Q;
     $('timePill').classList.toggle('hidden', !timed);
     buildPlan();
     show('game'); loadQuestion(); startTime=Date.now();
@@ -691,9 +735,9 @@
     var total=Math.round((Date.now()-startTime)/100)/10;
     $('resultEmoji').textContent= byBoom?'💥':'🏆';
     $('resultTitle').textContent= byBoom?'タイムアップ！':'ぜんぶクリア！';
-    $('finalTime').textContent=total.toFixed(1); $('finalRight').textContent=rightCount; $('finalCombo').textContent=maxCombo;
+    $('finalTime').textContent=total.toFixed(1); $('finalRight').textContent=rightCount; $('finalCombo').textContent=maxCombo; $('finalTotal').textContent=TOTAL_Q;
     var b=getBest(mode);
-    if(!byBoom && rightCount>=8 && (b===0||total<b)){ setBest(mode,total); $('newbest').classList.remove('hidden'); } else $('newbest').classList.add('hidden');
+    if(!byBoom && rightCount>=Math.ceil(TOTAL_Q*0.8) && (b===0||total<b)){ setBest(mode,total); $('newbest').classList.remove('hidden'); } else $('newbest').classList.add('hidden');
     show('result');
   }
 
@@ -711,6 +755,9 @@
   function goHome(){ clearInterval(qTimer); dead=false; $('intMenu').classList.add('hidden'); show('home'); }
   $('tohome').onclick=goHome;
   $('gameHome').onclick=goHome;
+  $('parentBtn').onclick=function(){ $('qCountSlider').value=TOTAL_Q; $('qCountVal').textContent=TOTAL_Q; show('parent'); };
+  $('parentBack').onclick=function(){ show('home'); };
+  $('qCountSlider').oninput=function(){ TOTAL_Q=parseInt(this.value); $('qCountVal').textContent=TOTAL_Q; setQCount(TOTAL_Q); };
 
   function runSelfTests(){
     var fails=0;
