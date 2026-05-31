@@ -201,6 +201,39 @@
   // 余りあり候補（小数÷整数）
   var MODE0R=[]; for(var b2=2;b2<=5;b2++){ for(var Q=11;Q<=25;Q++){ for(var r=1;r<b2;r++){ var aa=Q*b2+r; if(aa<=100){ MODE0R.push({b:b2,Q10:Q,rem10:r}); } } } }
 
+  // ===== 整数 2ケタ÷1ケタ プール（商は必ず2ケタ＝十の位に商が立つ） =====
+  var INT_POOL=[], INT_POOL_R=[];
+  for(var ib=2; ib<=9; ib++){
+    for(var iq=10; iq<=99; iq++){
+      var ia=ib*iq;
+      if(ia>=10 && ia<=99){ INT_POOL.push({a:ia,b:ib,ans:iq,rem:0}); }
+    }
+  }
+  for(var jb=2; jb<=9; jb++){
+    for(var jq=10; jq<=99; jq++){
+      for(var jr=1; jr<jb; jr++){
+        var ja=jb*jq+jr;
+        if(ja>=10 && ja<=99){ INT_POOL_R.push({a:ja,b:jb,ans:jq,rem:jr}); }
+      }
+    }
+  }
+
+  function genInt(withRem, variantSel, forceB){
+    var o={mode:3, hasRem:!!withRem, variant:variantSel||'A'};
+    var pool=(withRem?INT_POOL_R:INT_POOL).filter(function(P){ return forceB? P.b===forceB : true; });
+    if(pool.length===0) pool=(withRem?INT_POOL_R:INT_POOL);
+    var P=pick(pool);
+    o.a=P.a; o.b=P.b; o.ans=P.ans; o.rem=P.rem||0;
+    o.tens=Math.floor(P.a/10); o.ones=P.a%10;
+    o.containers=P.b;
+    o.story='🍬 '+P.a+'こ の あめを '+P.b+'人に 同じだけ！';
+    o.prob=P.a+' ÷ '+P.b;
+    o.beakerInstr='まず「10のたば」から 分けよう！'+(withRem?' 分けきれない分が あまり':'');
+    o.hint='10のたば'+o.tens+'本＋ばら'+o.ones+'本。十の位→一の位の順に '+P.b+'人へ。<br>'
+         +'こたえ '+P.ans+(withRem?' あまり '+o.rem:'')+'。';
+    return o;
+  }
+
   function gen(m, withRem, forceB){
     var o={mode:m, hasRem:!!withRem};
     if(m===0){
@@ -555,6 +588,34 @@
   $('hintbtn').onclick=function(){ $('hintbox').classList.toggle('hidden'); };
   $('retry').onclick=function(){ startGame(mode); };
   $('tohome').onclick=function(){ clearInterval(qTimer); show('home'); };
+
+  function runSelfTests(){
+    var fails=0;
+    function ok(cond,msg){ if(!cond){ fails++; console.error('FAIL:',msg); } else { console.log('ok:',msg); } }
+    window.__divTests={ok:ok, get fails(){return fails;}};
+    console.log('=== self tests ===');
+    // --- INT_POOL: 商は必ず2ケタ・わられる数は2ケタ ---
+    ok(typeof INT_POOL!=='undefined' && INT_POOL.length>0, 'INT_POOL exists & non-empty');
+    INT_POOL.forEach(function(P){
+      ok(P.a>=10 && P.a<=99, 'a is 2-digit: '+P.a);
+      ok(P.ans>=10 && P.ans<=99, 'quotient 2-digit: '+P.a+'/'+P.b+'='+P.ans);
+      ok(P.a===P.b*P.ans, 'exact divide: '+P.a+'='+P.b+'*'+P.ans);
+      ok(P.b>=2 && P.b<=9, 'divisor 2..9: '+P.b);
+    });
+    INT_POOL_R.forEach(function(P){
+      ok(P.a===P.b*P.ans+P.rem, 'rem exact: '+P.a+'='+P.b+'*'+P.ans+'+'+P.rem);
+      ok(P.rem>0 && P.rem<P.b, 'rem in range: '+P.rem+'<'+P.b);
+      ok(P.ans>=10 && P.ans<=99 && P.a<=99, 'rem case ranges: '+P.a);
+    });
+    // --- genInt ---
+    var g=genInt(false,'A',3);
+    ok(g.mode===3 && g.b===3 && g.hasRem===false, 'genInt no-rem mode3 b=3');
+    ok(g.tens*10+g.ones===g.a, 'tens/ones decompose a');
+    var gr=genInt(true,'A',null);
+    ok(gr.hasRem===true && gr.rem>0, 'genInt rem case');
+    console.log('=== done, fails =', fails, '===');
+  }
+  if(location.hash==='#test') runSelfTests();
 })();
 </script>
 </body>
