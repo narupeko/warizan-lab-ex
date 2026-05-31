@@ -589,7 +589,7 @@
     // すべての行を「固定幅の左端(lead2) ＋ N個の桁セル」でそろえて、列を一致させる
     function lead(content){ return '<span class="lead2">'+(content||'')+'</span>'; }
     function cellsRow(textt,endCol,cls){
-      var cells=[]; for(var k=0;k<N;k++) cells[k]='<span class="cellnum'+(cls?' '+cls:'')+'"></span>';
+      var cells=[]; for(var k=0;k<N;k++) cells[k]='<span class="cellnum"></span>';   // 空きマスには線を引かない
       var start=endCol-(textt.length-1);
       for(var j=0;j<textt.length;j++){ var col=start+j; if(col>=0&&col<N) cells[col]='<span class="cellnum'+(cls?' '+cls:'')+'">'+textt.charAt(j)+'</span>'; }
       return '<div class="r">'+lead('')+cells.join('')+'</div>';
